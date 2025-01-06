@@ -1,0 +1,45 @@
+{
+	"name": "app",
+	"private": true,
+	"version": "0.0.0",
+	"main": "dist/main/index.cjs",
+	"type": "module",
+	"scripts": {
+		"dev:vite": "vite",
+		"build:vite": "vite build",
+		"dev:electron": "tsc -p tsconfig.node.json && cross-env NODE_ENV=development electron .",
+		"build:electron": "cross-env NODE_ENV=production tsc -p tsconfig.node.json",
+		"clean": "rimraf ./dist && rimraf ./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+		"build": "npm run clean && npm run build:vite && npm run build:electron",
+		"start": "electron .",
+		"preview": "vite preview",
+		"check": "svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json",
+		"format": "prettier --write .",
+		"test": "vitest"
+	},
+	"devDependencies": {
+		"@sveltejs/vite-plugin-svelte": "^5.0.0",
+		"@tsconfig/svelte": "^5.0.4",
+		"@types/electron": "^1.4.38",
+		"@types/node": "^22.10.2",
+		"autoprefixer": "^10.4.20",
+		"cross-env": "^7.0.3",
+		"electron": "^33.2.1",
+		"postcss": "^8.4.49",
+		"prettier": "^3.3.2",
+		"prettier-plugin-svelte": "^3.2.6",
+		"prettier-plugin-tailwindcss": "^0.6.5",
+		"rimraf": "^6.0.1",
+		"svelte": "^5.2.7",
+		"svelte-check": "^4.1.0",
+		"tailwindcss": "^3.4.9",
+		"tslib": "^2.8.1",
+		"typescript": "~5.6.2",
+		"vite": "^6.0.1",
+		"vitest": "^2.0.4"
+	},
+	"dependencies": {
+		"@types/d3": "^7.4.3",
+		"d3": "^7.9.0"
+	}
+}
