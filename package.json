@@ -1,5 +1,6 @@
 {
-	"name": "app",
+	"name": "eca-pro",
+	"productName": "ECA-PRO",
 	"private": true,
 	"version": "0.0.0",
 	"main": "dist/main/index.cjs",
@@ -9,7 +10,7 @@
 		"build:vite": "vite build",
 		"dev:electron": "tsc -p tsconfig.node.json && cross-env NODE_ENV=development electron .",
 		"build:electron": "cross-env NODE_ENV=production tsc -p tsconfig.node.json",
-		"clean": "rimraf ./dist && rimraf ./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+		"clean": "rimraf ./dist && rimraf ./node_modules/.tmp/tsconfig.node.tsbuildinfo && rimraf \"$HOME/Library/Application Support/ECA-PRO/settings.json\"",
 		"build": "npm run clean && npm run build:vite && npm run build:electron",
 		"start": "electron .",
 		"preview": "vite preview",
@@ -20,7 +21,6 @@
 	"devDependencies": {
 		"@sveltejs/vite-plugin-svelte": "^5.0.0",
 		"@tsconfig/svelte": "^5.0.4",
-		"@types/electron": "^1.4.38",
 		"@types/node": "^22.10.2",
 		"autoprefixer": "^10.4.20",
 		"cross-env": "^7.0.3",

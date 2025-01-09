@@ -3,8 +3,8 @@
 		"composite": true,
 		"tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
 		"skipLibCheck": true,
-		"module": "CommonJS",
-		"moduleResolution": "node",
+		"module": "nodenext",
+		"moduleResolution": "nodenext",
 		"allowSyntheticDefaultImports": true,
 		"outDir": "dist",
 		"rootDir": "src",
@@ -13,5 +13,5 @@
 		"target": "ES2022",
 		"allowJs": true
 	},
-	"include": ["src/main/**/*.cts", "src/preload/**/*.cts", "src/shared/**/*.ts"]
+	"include": ["src/main/**/*.cts", "src/preload/**/*.cts", "src/shared/**/*.cts"]
 }

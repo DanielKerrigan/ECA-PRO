@@ -1,22 +1,32 @@
 <script lang="ts">
-	import type { ElectronAPI } from '../shared/api';
-	import Counter from './lib/Counter.svelte';
+	import type { Data, Settings } from '../shared/api';
+	import DataTable from './lib/DataTable.svelte';
+	import SettingsModal from './lib/SettingsModal.svelte';
 
-	const electronApi: ElectronAPI = window.api;
+	let settingsPromise: Promise<Settings> = $state(window.api.getSettings());
+	let showSettingsModal = $state(false);
 
-	const nodeVersion = electronApi.versions.node();
-	const chromeVersion = electronApi.versions.chrome();
-	const electronVersion = electronApi.versions.electron();
+	const dataPromise: Promise<Data> = $derived(
+		settingsPromise.then((v) => window.api.getData(v.directory))
+	);
+
+	window.api.onSettingsMenuClicked(() => {
+		showSettingsModal = true;
+	});
 </script>
 
-<main>
-	<div>Node: {nodeVersion}</div>
-	<div>Chrome: {chromeVersion}</div>
-	<div>Electron: {electronVersion}</div>
-	<div>
-		<Counter />
-	</div>
-</main>
+<div class="flex h-full w-full flex-col">
+	{#if showSettingsModal}
+		{#await settingsPromise then settings}
+			<SettingsModal
+				{settings}
+				onClose={() => (showSettingsModal = false)}
+				onUpdateSettings={(newSettings) => (settingsPromise = Promise.resolve(newSettings))}
+			/>
+		{/await}
+	{/if}
 
-<style>
-</style>
+	{#await dataPromise then data}
+		<DataTable proMeta={data.proMeta} proData={data.proData} />
+	{/await}
+</div>

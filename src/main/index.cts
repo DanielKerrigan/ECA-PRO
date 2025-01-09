@@ -1,7 +1,123 @@
-const { app, BrowserWindow } = require('electron');
-const path = require('path');
+import type { Data, PROData, PROMeta, PROResponse, Settings } from '../shared/api';
+import type { IpcMainInvokeEvent } from 'electron';
 
-const createWindow = () => {
+const { app, BrowserWindow, ipcMain, Menu, dialog } = require('electron');
+
+const d3 = await import('d3');
+import path = require('node:path');
+import fs = require('node:fs/promises');
+import fsSync = require('node:fs');
+
+function readSettings(path: string): Settings {
+	try {
+		const data: string = fsSync.readFileSync(path, 'utf8');
+		const settings: Settings = JSON.parse(data);
+		return settings;
+	} catch (err) {
+		console.error('Error reading settings', err);
+		return {
+			directory: ''
+		};
+	}
+}
+
+function writeSettings(path: string, settings: Settings): Promise<void> {
+	try {
+		const data = JSON.stringify(settings, null, 2);
+		return fs.writeFile(path, data);
+	} catch (err) {
+		return Promise.reject(err);
+	}
+}
+
+function updateSettings(path: string, settings: Settings): Promise<Settings> {
+	return writeSettings(path, settings).then(() => {
+		return settings;
+	});
+}
+
+function selectDirectory(): Promise<string> {
+	return dialog
+		.showOpenDialog({
+			properties: ['openDirectory']
+		})
+		.then(
+			(result) => {
+				if (result.canceled || result.filePaths.length == 0) {
+					return Promise.reject('canceled');
+				}
+				return result.filePaths[0];
+			},
+			(reason) => Promise.reject(reason)
+		);
+}
+
+function getData(directoryPath: string): Promise<Data> {
+	const metaPromise = fs.readFile(path.join(directoryPath, 'META.csv'), 'utf8');
+	const dataPromise = fs.readFile(path.join(directoryPath, 'DATA.csv'), 'utf8');
+
+	return Promise.all([metaPromise, dataPromise]).then(([metaContents, dataContents]) => {
+		const metaRows = d3
+			.csvParse(metaContents, (d) => {
+				const responseItemStrings = d.ResponseItemValues.split('|').map((s) => s.trim());
+				const responseItemValues = d3.range(responseItemStrings.length);
+
+				return {
+					itemID: +d.ItemID,
+					item: d.Item,
+					constructName: d.ConstructName,
+					responseItemType: d.ResponseItemType,
+					responseItemStrings,
+					responseItemValues,
+					bankName: d.BankName,
+					categoryName: d.CategoryName
+				};
+			})
+			.filter((d) => d.item !== '');
+
+		const proMeta: PROMeta = d3.group(
+			metaRows,
+			(d) => d.categoryName,
+			(d) => d.constructName
+		);
+
+		const dateParse = d3.timeParse('%Y-%m-%d %H:%M:%S');
+
+		const dataRows = d3
+			.csvParse(dataContents, (d) => {
+				return {
+					userID: d.UserID,
+					dateTime: dateParse(d.DateTime),
+					itemID: +d.itemID,
+					responseValue: +d.ResponseValue,
+					responseText: d.ResponseText
+				};
+			})
+			.filter((d): d is PROResponse => d.dateTime !== null);
+
+		const proData: PROData = d3.rollup(
+			dataRows,
+			(g) => g,
+			(d) => d.itemID
+		);
+
+		return {
+			proMeta,
+			proData
+		};
+	});
+}
+
+const settingsPath = path.join(app.getPath('userData'), 'settings.json');
+
+ipcMain.handle('get-settings', () => readSettings(settingsPath));
+ipcMain.handle('select-directory', () => selectDirectory());
+ipcMain.handle('update-settings', (_event: IpcMainInvokeEvent, newSettings: Settings) =>
+	updateSettings(settingsPath, newSettings)
+);
+ipcMain.handle('get-data', (_event: IpcMainInvokeEvent, path: string) => getData(path));
+
+function createWindow() {
 	const preloadPath = path.join(__dirname, '../preload/index.cjs');
 	const win = new BrowserWindow({
 		width: 800,
@@ -11,14 +127,31 @@ const createWindow = () => {
 		}
 	});
 
+	// menu
+
+	const menu = Menu.buildFromTemplate([
+		{
+			label: app.name,
+			submenu: [
+				{
+					click: () => win.webContents.send('open-settings'),
+					label: 'Settings'
+				}
+			]
+		}
+	]);
+
+	Menu.setApplicationMenu(menu);
+
 	// In development, load from Vite dev server
 	if (process.env.NODE_ENV === 'development') {
 		win.loadURL('http://localhost:5173');
+		win.webContents.openDevTools();
 	} else {
 		const htmlPath = path.join(__dirname, '..', 'renderer', 'index.html');
 		win.loadFile(htmlPath);
 	}
-};
+}
 
 app.whenReady().then(() => {
 	createWindow();
