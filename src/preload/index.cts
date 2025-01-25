@@ -1,4 +1,4 @@
-import type { ElectronAPI, Settings } from '../shared/api';
+import type { ElectronAPI, Settings } from '../shared/api' with { 'resolution-mode': 'require' };
 const { contextBridge, ipcRenderer } = require('electron');
 
 const api: ElectronAPI = {

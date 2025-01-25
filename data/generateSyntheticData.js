@@ -42,7 +42,7 @@ fs.readFile('META.csv', 'utf8', (err, contents) => {
 				const offsetSeconds = d3.randomInt(60 * 60 * 12)();
 				return d3.timeSecond.offset(d, offsetSeconds);
 			})
-			.filter(() => Math.random() < 0.1);
+			.filter(() => Math.random() > 0.1);
 		for (const date of dates) {
 			for (const item of meta) {
 				const randomIndex = d3.randomInt(item.responseItemValues.length)();

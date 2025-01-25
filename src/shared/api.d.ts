@@ -18,18 +18,19 @@ export type PROItem = {
 export type PROMeta = InternMap<string, d3.InternMap<string, PROItem[]>>;
 
 export type PROResponse = {
-	userID: string;
+	userID: number;
 	dateTime: Date;
 	itemID: number;
 	responseValue: number;
 	responseText: string;
 };
 
-export type PROData = InternMap<number, PROResponse[]>;
+export type PROUsersResponses = InternMap<number, PROItemToResponses>;
+export type PROItemToResponses = InternMap<number, PROResponse[]>;
 
 export type Data = {
 	proMeta: PROMeta;
-	proData: PROData;
+	proUsersResponses: PROUsersResponses;
 };
 
 export type ElectronAPI = {

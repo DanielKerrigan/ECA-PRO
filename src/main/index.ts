@@ -1,12 +1,14 @@
-import type { Data, PROData, PROMeta, PROResponse, Settings } from '../shared/api';
+import type { Data, PROUsersResponses, PROMeta, PROResponse, Settings } from '../shared/api.js';
 import type { IpcMainInvokeEvent } from 'electron';
 
-const { app, BrowserWindow, ipcMain, Menu, dialog } = require('electron');
+import { app, BrowserWindow, ipcMain, Menu, dialog } from 'electron';
 
-const d3 = await import('d3');
-import path = require('node:path');
-import fs = require('node:fs/promises');
-import fsSync = require('node:fs');
+import * as d3 from 'd3';
+import * as path from 'node:path';
+import * as fs from 'node:fs/promises';
+import * as fsSync from 'node:fs';
+
+const __dirname = import.meta.dirname;
 
 function readSettings(path: string): Settings {
 	try {
@@ -86,24 +88,25 @@ function getData(directoryPath: string): Promise<Data> {
 		const dataRows = d3
 			.csvParse(dataContents, (d) => {
 				return {
-					userID: d.UserID,
+					userID: +d.UserID,
 					dateTime: dateParse(d.DateTime),
-					itemID: +d.itemID,
+					itemID: +d.ItemID,
 					responseValue: +d.ResponseValue,
 					responseText: d.ResponseText
 				};
 			})
 			.filter((d): d is PROResponse => d.dateTime !== null);
 
-		const proData: PROData = d3.rollup(
+		const proUsersResponses: PROUsersResponses = d3.rollup(
 			dataRows,
-			(g) => g,
+			(g) => g.sort((a, b) => d3.ascending(a.dateTime, b.dateTime)),
+			(d) => d.userID,
 			(d) => d.itemID
 		);
 
 		return {
 			proMeta,
-			proData
+			proUsersResponses
 		};
 	});
 }
@@ -120,12 +123,11 @@ ipcMain.handle('get-data', (_event: IpcMainInvokeEvent, path: string) => getData
 function createWindow() {
 	const preloadPath = path.join(__dirname, '../preload/index.cjs');
 	const win = new BrowserWindow({
-		width: 800,
-		height: 600,
 		webPreferences: {
 			preload: preloadPath
 		}
 	});
+	win.maximize();
 
 	// menu
 
