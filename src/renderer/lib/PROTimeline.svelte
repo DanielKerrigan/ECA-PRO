@@ -42,8 +42,6 @@
 			: null
 	);
 
-	const barWidth = 3;
-
 	const x = $derived(
 		scaleTime()
 			.domain([startDate, endDatePlusOne])
@@ -61,6 +59,19 @@
 			(response) => response.dateTime >= startDate && response.dateTime <= endDatePlusOne
 		)
 	);
+
+	function getBarWidth(startDate: Date, endDate: Date, x: ScaleTime<number, number>) {
+		const minWidth = 1;
+		const maxWidth = 20;
+
+		const numDays = timeDay.count(startDate, endDate);
+		const visWidth = x.range()[1] - x.range()[0];
+		const idealBarWidth = visWidth / numDays / 2;
+
+		return Math.min(Math.max(minWidth, idealBarWidth), maxWidth);
+	}
+
+	const barWidth = $derived(getBarWidth(startDate, endDatePlusOne, x));
 
 	function draw(
 		ctx: CanvasRenderingContext2D,

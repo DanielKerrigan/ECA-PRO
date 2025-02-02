@@ -3,7 +3,7 @@
 	import Header from './Header.svelte';
 	import PROTable from './PROTable.svelte';
 	import { min, max } from 'd3-array';
-	import { timeDay } from 'd3-time';
+	import { timeDay, timeMonth } from 'd3-time';
 
 	let {
 		proMeta,
@@ -39,8 +39,11 @@
 			maxDate = maxDateTime === undefined ? undefined : timeDay.floor(maxDateTime);
 		}
 
-		startDate = minDate;
-		endDate = maxDate;
+		if (minDate && maxDate) {
+			const idealStart = timeMonth.offset(maxDate, -3);
+			startDate = idealStart >= minDate ? idealStart : minDate;
+			endDate = maxDate;
+		}
 	}
 
 	function onChangeDates(start: Date, end: Date) {

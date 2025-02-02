@@ -1,4 +1,6 @@
 <script lang="ts">
+	import * as Popover from '$lib/components/ui/popover/index.js';
+	import { interpolateOrRd } from 'd3-scale-chromatic';
 	import type { PROResponse, PROItem, PROMeta, PROItemToResponses } from '../../shared/api';
 	import PROTimeline from './PROTimeline.svelte';
 
@@ -15,6 +17,17 @@
 	} = $props();
 
 	let visWidth = $state(0);
+
+	function getColor(value: number, responseItemValues: number[]): string {
+		if (value === 0) {
+			return '#07b63f';
+		} else if (value === responseItemValues.length - 1) {
+			return '#737373';
+		} else {
+			const percent = value / (responseItemValues.length - 2);
+			return interpolateOrRd(percent);
+		}
+	}
 </script>
 
 <div
@@ -34,7 +47,24 @@
 				{construct}
 			</div>
 			{#each items as item}
-				<div class="flex items-center bg-white px-2 py-1">{item.responseItemType}</div>
+				<div class="flex items-center bg-white px-2 py-1">
+					<Popover.Root>
+						<Popover.Trigger>{item.responseItemType}</Popover.Trigger>
+						<Popover.Content class="w-fit">
+							<div>
+								{#each item.responseItemValues as value, i}
+									<div class="flex items-center gap-2">
+										<div
+											class="h-4 w-4"
+											style:background-color={getColor(value, item.responseItemValues)}
+										></div>
+										<div>{item.responseItemStrings[i]}</div>
+									</div>
+								{/each}
+							</div>
+						</Popover.Content>
+					</Popover.Root>
+				</div>
 				<div class="bg-white">
 					<PROTimeline
 						{item}

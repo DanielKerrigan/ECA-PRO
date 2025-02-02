@@ -30,8 +30,8 @@ fs.readFile('META.csv', 'utf8', (err, contents) => {
 	const dateSpecifier = '%Y-%m-%d %H:%M:%S';
 	const dateFormat = d3.timeFormat(dateSpecifier);
 
-	const startDate = Date.now();
-	const endDate = d3.timeDay.offset(startDate, 365);
+	const startDate = new Date(2022, 0, 1);
+	const endDate = new Date(2024, 11, 31);
 
 	const data = [];
 
