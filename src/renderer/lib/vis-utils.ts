@@ -1,4 +1,5 @@
 import { format } from 'd3-format';
+import { interpolateOrRd } from 'd3-scale-chromatic';
 
 // Adapted from https://www.html5rocks.com/en/tutorials/canvas/hidpi/
 export function scaleCanvas(
@@ -72,4 +73,15 @@ export function fitString(ctx: CanvasRenderingContext2D, str: string, maxWidth: 
 	);
 
 	return str.substring(0, index) + ellipsis;
+}
+
+export function getPROColor(value: number, responseItemValues: number[]): string {
+	if (value === 0) {
+		return '#07b63f';
+	} else if (value === responseItemValues.length - 1) {
+		return '#737373';
+	} else {
+		const percent = value / (responseItemValues.length - 2);
+		return interpolateOrRd(percent);
+	}
 }

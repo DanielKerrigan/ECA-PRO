@@ -1,10 +1,10 @@
 <script lang="ts">
-	import type { PROResponse, PROItem } from '../../shared/api';
+	import type { PROResponse, PROItem } from '../../../shared/api';
 	import { scaleTime, scaleLinear } from 'd3-scale';
 	import type { ScaleTime, ScaleLinear } from 'd3-scale';
 	import { interpolateOrRd } from 'd3-scale-chromatic';
-	import { scaleCanvas } from './vis-utils';
-	import { axis } from './axis';
+	import { getPROColor, scaleCanvas } from '$lib/vis-utils';
+	import { axis } from '$lib/components/vis/axis/axis';
 	import { timeDay } from 'd3-time';
 
 	let {
@@ -94,13 +94,11 @@
 
 		for (const response of responses) {
 			const barX = x(response.dateTime) - barWidth / 2;
-			if (response.responseValue === 0) {
-				ctx.fillStyle = '#07b63f';
-				ctx.fillRect(barX, y.range()[0], barWidth, baselineHeight);
-			} else if (
+			if (
+				response.responseValue === 0 ||
 				response.responseValue === item.responseItemValues[item.responseItemValues.length - 1]
 			) {
-				ctx.fillStyle = '#737373';
+				ctx.fillStyle = getPROColor(response.responseValue, item.responseItemValues);
 				ctx.fillRect(barX, y.range()[0], barWidth, baselineHeight);
 			} else {
 				const percent = response.responseValue / (item.responseItemValues.length - 2);

@@ -1,4 +1,4 @@
-import { fitString } from './vis-utils';
+import { fitString } from '$lib/vis-utils';
 
 export type AxisOrientation = 'top' | 'right' | 'bottom' | 'left';
 export type AxisTitleAnchor = 'top' | 'right' | 'bottom' | 'left' | 'center';
@@ -85,6 +85,8 @@ export function axis<D extends Domain>(
 		maxTickLabelSpace,
 		tickLineColor = 'black',
 		tickLabelColor = 'black',
+		showDomain = false,
+		domainColor = 'black',
 		title = '',
 		titleFontSize = 12,
 		titleAnchor = 'center',
@@ -107,6 +109,8 @@ export function axis<D extends Domain>(
 		maxTickLabelSpace?: number;
 		tickLineColor?: string;
 		tickLabelColor?: string;
+		showDomain?: boolean;
+		domainColor?: string;
 		title?: string;
 		titleFontSize?: number;
 		titleAnchor?: AxisTitleAnchor;
@@ -139,6 +143,17 @@ export function axis<D extends Domain>(
 
 	ctx.font = `${tickLabelFontSize}px sans-serif`;
 	ctx.globalAlpha = 1;
+
+	ctx.strokeStyle = domainColor;
+	ctx.lineWidth = 1;
+
+	if (showDomain) {
+		ctx.beginPath();
+		ctx.moveTo(scale.range()[0], 0);
+		ctx.lineTo(scale.range()[1], 0);
+		ctx.stroke();
+	}
+
 	ctx.fillStyle = tickLabelColor;
 	ctx.strokeStyle = tickLineColor;
 

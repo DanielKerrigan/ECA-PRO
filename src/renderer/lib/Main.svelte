@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type { PROItemToResponses, PROMeta, PROUsersResponses } from '../../shared/api';
 	import Header from './Header.svelte';
-	import PROTable from './PROTable.svelte';
+	import type { AggregationLevel } from './pro/aggregation';
+	import PROTable from './pro/PROTable.svelte';
 	import { min, max } from 'd3-array';
 	import { timeDay, timeMonth } from 'd3-time';
 
@@ -19,6 +20,9 @@
 	let maxDate: Date | undefined = $state();
 	let startDate: Date | undefined = $state();
 	let endDate: Date | undefined = $state();
+	let aggregationLevel: AggregationLevel = $state('none');
+	let chartType: string = $state('stacked-bars');
+	let normalizeBars: boolean = $state(false);
 
 	function onChangePatient(newPatientID: number) {
 		patientID = newPatientID;
@@ -50,6 +54,18 @@
 		startDate = new Date(start);
 		endDate = new Date(end);
 	}
+
+	function onChangeAggregationLevel(level: AggregationLevel) {
+		aggregationLevel = level;
+	}
+
+	function onChangeChartType(ct: string) {
+		chartType = ct;
+	}
+
+	function onChangeNormalizeBars(normalize: boolean) {
+		normalizeBars = normalize;
+	}
 </script>
 
 <div class="flex h-full w-full flex-col gap-4">
@@ -57,14 +73,28 @@
 		{proMeta}
 		{proUsersResponses}
 		{patientID}
-		{onChangePatient}
 		{startDate}
 		{endDate}
 		{minDate}
 		{maxDate}
+		{aggregationLevel}
+		{chartType}
+		{normalizeBars}
+		{onChangePatient}
 		{onChangeDates}
+		{onChangeAggregationLevel}
+		{onChangeChartType}
+		{onChangeNormalizeBars}
 	/>
 	{#if patientResponses && startDate && endDate}
-		<PROTable proItemToResponses={patientResponses} {proMeta} {startDate} {endDate} />
+		<PROTable
+			proItemToResponses={patientResponses}
+			{proMeta}
+			{startDate}
+			{endDate}
+			{aggregationLevel}
+			{chartType}
+			{normalizeBars}
+		/>
 	{/if}
 </div>
