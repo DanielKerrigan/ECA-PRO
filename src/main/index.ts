@@ -1,4 +1,11 @@
-import type { Data, PROUsersResponses, PROMeta, PROResponse, Settings } from '../shared/api.js';
+import type {
+	Data,
+	PROUsersResponses,
+	PROMetaByCategoryConstruct,
+	PROMetaByID,
+	PROResponse,
+	Settings
+} from '../shared/api.js';
 import type { IpcMainInvokeEvent } from 'electron';
 
 import { app, BrowserWindow, ipcMain, Menu, dialog } from 'electron';
@@ -77,11 +84,13 @@ function getData(directoryPath: string): Promise<Data> {
 			})
 			.filter((d) => d.item !== '');
 
-		const proMeta: PROMeta = d3.group(
+		const proMetaByCategoryConstruct: PROMetaByCategoryConstruct = d3.group(
 			metaRows,
 			(d) => d.categoryName,
 			(d) => d.constructName
 		);
+
+		const proMetaByID: PROMetaByID = d3.index(metaRows, (d) => d.itemID);
 
 		const dateParse = d3.timeParse('%Y-%m-%d %H:%M:%S');
 
@@ -105,7 +114,8 @@ function getData(directoryPath: string): Promise<Data> {
 		);
 
 		return {
-			proMeta,
+			proMetaByCategoryConstruct,
+			proMetaByID,
 			proUsersResponses
 		};
 	});

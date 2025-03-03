@@ -1,6 +1,11 @@
 <script lang="ts">
 	import * as Popover from '$lib/components/ui/popover/index.js';
-	import type { PROMeta, PROItemToResponses } from '../../../shared/api';
+	import type {
+		PROItem,
+		PROMetaByCategoryConstruct,
+		PROMetaByID,
+		PROItemToResponses
+	} from '../../../shared/api';
 	import PROTimeline from './PROTimeline.svelte';
 	import PROLegend from './PROLegend.svelte';
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
@@ -9,9 +14,11 @@
 	import PROTimelineAggregatedLine from './PROTimelineAggregatedLine.svelte';
 	import PROTimelineStackedBars from './PROTimelineStackedBars.svelte';
 	import type { AggregationLevel } from './aggregation';
+	import { getPROMetaByConstruct } from './grouping';
 
 	let {
-		proMeta,
+		proMetaByCategoryConstruct,
+		proMetaByID,
 		proItemToResponses,
 		startDate,
 		endDate,
@@ -19,7 +26,8 @@
 		chartType,
 		normalizeBars
 	}: {
-		proMeta: PROMeta;
+		proMetaByCategoryConstruct: PROMetaByCategoryConstruct;
+		proMetaByID: PROMetaByID;
 		proItemToResponses: PROItemToResponses;
 		startDate: Date;
 		endDate: Date;
@@ -27,6 +35,18 @@
 		chartType: string;
 		normalizeBars: boolean;
 	} = $props();
+
+	const itemIDs = $derived(Array.from(proItemToResponses.keys()));
+	let filteredItemIDs: number[] = $state([]);
+
+	// TODO: Is there a way to do this without using $effect?
+	$effect(() => {
+		filteredItemIDs = itemIDs;
+	});
+
+	const proMetaByConstruct: [string, PROItem[]][] = $derived(
+		getPROMetaByConstruct(proMetaByID, filteredItemIDs)
+	);
 
 	let visWidth = $state(0);
 </script>
@@ -37,7 +57,13 @@
 	<div class="sticky top-0 z-10 flex gap-1 bg-neutral-200 px-2 py-1 uppercase">
 		<div class="font-semibold">Symptom</div>
 
-		<PROTableSymptomFilter />
+		<PROTableSymptomFilter
+			{proMetaByID}
+			itemIDs={Array.from(proItemToResponses.keys())}
+			onFilterItems={(ids) => {
+				filteredItemIDs = ids;
+			}}
+		/>
 
 		<Popover.Root>
 			<Popover.Trigger class={cn([buttonVariants({ variant: 'ghost' }), 'size-6 p-0'])}>
@@ -66,54 +92,52 @@
 	>
 		Values
 	</div>
-	{#each proMeta as [_, constructToItems]}
-		{#each constructToItems as [construct, items]}
-			<div style:grid-row={`span ${items.length}`} class="flex items-center bg-white px-2 py-1">
-				{construct}
+	{#each proMetaByConstruct as [construct, items]}
+		<div style:grid-row={`span ${items.length}`} class="flex items-center bg-white px-2 py-1">
+			{construct}
+		</div>
+		{#each items as item}
+			<div class="flex items-center bg-white px-2 py-1">
+				<Popover.Root>
+					<Popover.Trigger
+						class={cn([buttonVariants({ variant: 'outline' }), 'font-normal', 'text-base'])}
+						>{item.responseItemType}</Popover.Trigger
+					>
+					<Popover.Content class="w-fit">
+						<PROLegend {item} />
+					</Popover.Content>
+				</Popover.Root>
 			</div>
-			{#each items as item}
-				<div class="flex items-center bg-white px-2 py-1">
-					<Popover.Root>
-						<Popover.Trigger
-							class={cn([buttonVariants({ variant: 'outline' }), 'font-normal', 'text-base'])}
-							>{item.responseItemType}</Popover.Trigger
-						>
-						<Popover.Content class="w-fit">
-							<PROLegend {item} />
-						</Popover.Content>
-					</Popover.Root>
-				</div>
-				<div class="bg-white">
-					{#if aggregationLevel === 'none'}
-						<PROTimeline
-							{item}
-							responses={proItemToResponses.get(item.itemID) ?? []}
-							width={visWidth}
-							{startDate}
-							{endDate}
-						/>
-					{:else if chartType === 'line'}
-						<PROTimelineAggregatedLine
-							{item}
-							{aggregationLevel}
-							responses={proItemToResponses.get(item.itemID) ?? []}
-							width={visWidth}
-							{startDate}
-							{endDate}
-						/>
-					{:else}
-						<PROTimelineStackedBars
-							{item}
-							{aggregationLevel}
-							responses={proItemToResponses.get(item.itemID) ?? []}
-							{normalizeBars}
-							width={visWidth}
-							{startDate}
-							{endDate}
-						/>
-					{/if}
-				</div>
-			{/each}
+			<div class="bg-white">
+				{#if aggregationLevel === 'none'}
+					<PROTimeline
+						{item}
+						responses={proItemToResponses.get(item.itemID) ?? []}
+						width={visWidth}
+						{startDate}
+						{endDate}
+					/>
+				{:else if chartType === 'line'}
+					<PROTimelineAggregatedLine
+						{item}
+						{aggregationLevel}
+						responses={proItemToResponses.get(item.itemID) ?? []}
+						width={visWidth}
+						{startDate}
+						{endDate}
+					/>
+				{:else}
+					<PROTimelineStackedBars
+						{item}
+						{aggregationLevel}
+						responses={proItemToResponses.get(item.itemID) ?? []}
+						{normalizeBars}
+						width={visWidth}
+						{startDate}
+						{endDate}
+					/>
+				{/if}
+			</div>
 		{/each}
 	{/each}
 </div>

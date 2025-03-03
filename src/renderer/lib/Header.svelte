@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { PROMeta, PROUsersResponses } from '../../shared/api';
+	import type { PROUsersResponses } from '../../shared/api';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
@@ -9,7 +9,6 @@
 	import { capitalize } from './utils';
 
 	let {
-		proMeta,
 		proUsersResponses,
 		patientID,
 		startDate,
@@ -25,7 +24,6 @@
 		onChangeChartType,
 		onChangeNormalizeBars
 	}: {
-		proMeta: PROMeta;
 		proUsersResponses: PROUsersResponses;
 		patientID: number | undefined;
 		startDate: Date | undefined;

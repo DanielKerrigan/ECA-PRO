@@ -1,5 +1,10 @@
 <script lang="ts">
-	import type { PROItemToResponses, PROMeta, PROUsersResponses } from '../../shared/api';
+	import type {
+		PROItemToResponses,
+		PROMetaByCategoryConstruct,
+		PROMetaByID,
+		PROUsersResponses
+	} from '../../shared/api';
 	import Header from './Header.svelte';
 	import type { AggregationLevel } from './pro/aggregation';
 	import PROTable from './pro/PROTable.svelte';
@@ -7,10 +12,12 @@
 	import { timeDay, timeMonth } from 'd3-time';
 
 	let {
-		proMeta,
+		proMetaByCategoryConstruct,
+		proMetaByID,
 		proUsersResponses
 	}: {
-		proMeta: PROMeta;
+		proMetaByCategoryConstruct: PROMetaByCategoryConstruct;
+		proMetaByID: PROMetaByID;
 		proUsersResponses: PROUsersResponses;
 	} = $props();
 
@@ -70,7 +77,6 @@
 
 <div class="flex h-full w-full flex-col gap-4">
 	<Header
-		{proMeta}
 		{proUsersResponses}
 		{patientID}
 		{startDate}
@@ -89,7 +95,8 @@
 	{#if patientResponses && startDate && endDate}
 		<PROTable
 			proItemToResponses={patientResponses}
-			{proMeta}
+			{proMetaByCategoryConstruct}
+			{proMetaByID}
 			{startDate}
 			{endDate}
 			{aggregationLevel}

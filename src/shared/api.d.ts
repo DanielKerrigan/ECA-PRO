@@ -15,7 +15,8 @@ export type PROItem = {
 	categoryName: string;
 };
 
-export type PROMeta = InternMap<string, d3.InternMap<string, PROItem[]>>;
+export type PROMetaByCategoryConstruct = InternMap<string, d3.InternMap<string, PROItem[]>>;
+export type PROMetaByID = InternMap<number, PROItem>;
 
 export type PROResponse = {
 	userID: number;
@@ -29,7 +30,8 @@ export type PROUsersResponses = InternMap<number, PROItemToResponses>;
 export type PROItemToResponses = InternMap<number, PROResponse[]>;
 
 export type Data = {
-	proMeta: PROMeta;
+	proMetaByCategoryConstruct: PROMetaByCategoryConstruct;
+	proMetaByID: PROMetaByID;
 	proUsersResponses: PROUsersResponses;
 };
 
