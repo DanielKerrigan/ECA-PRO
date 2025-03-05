@@ -28,23 +28,31 @@ export function getTitleLocation<D extends Domain>(
 	const maxRange = Math.max(...scale.range());
 	const midRange = (minRange + maxRange) / 2;
 
-	if (orientation === 'left' || orientation == 'right') {
-		const textAnchor = orientation === 'left' ? 'start' : 'end';
-		const x = orientation === 'left' ? -marginLeft : marginRight;
+	const isLeft = orientation === 'left';
+	const isRight = orientation === 'right';
+	const isTop = orientation === 'top';
+	const isBottom = orientation === 'bottom';
+
+	if (isLeft || isRight) {
+		const x = isLeft ? -marginLeft : marginRight;
 		if (titleAnchor === 'top') {
 			const yPos = minRange - marginTop;
-			const dy = 0.71 * yPos;
-			return { textAnchor, x, y: yPos + dy };
+			const dy = 0.71 * fontSize;
+			return { textAnchor: isLeft ? 'start' : 'end', x, y: yPos + dy };
 		} else if (titleAnchor === 'bottom') {
-			return { textAnchor, x, y: maxRange + marginBottom };
+			return {
+				textAnchor: isLeft ? 'start' : 'end',
+				x,
+				y: maxRange + marginBottom
+			};
 		} else {
 			const yPos = midRange;
-			const dy = 0.32 * midRange;
-			return { textAnchor, x, y: yPos + dy };
+			const dy = 0.32 * fontSize;
+			return { textAnchor: isLeft ? 'end' : 'start', x, y: yPos + dy };
 		}
 	} else {
-		const y = orientation === 'top' ? -marginTop + fontSize / 2 : marginBottom - fontSize / 2;
-		const dy = orientation === 'top' ? y * 0.71 : 0;
+		const y = isTop ? -marginTop + fontSize / 2 : marginBottom - fontSize / 2;
+		const dy = isTop ? fontSize * 0.71 : 0;
 		if (titleAnchor === 'left') {
 			return {
 				textAnchor: 'start',
@@ -198,6 +206,8 @@ export function axis<D extends Domain>(
 	});
 
 	if (title) {
+		ctx.textAlign = 'start';
+		ctx.textBaseline = 'alphabetic';
 		ctx.font = `${titleFontSize}px sans-serif`;
 		ctx.fillStyle = titleColor;
 		ctx.fillText(title, titleLocation.x, titleLocation.y);

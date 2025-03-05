@@ -75,6 +75,7 @@ export function fitString(ctx: CanvasRenderingContext2D, str: string, maxWidth: 
 	return str.substring(0, index) + ellipsis;
 }
 
+// TODO: use normalized value isntead?
 export function getPROColor(value: number, responseItemValues: number[]): string {
 	if (value === 0) {
 		return '#07b63f';

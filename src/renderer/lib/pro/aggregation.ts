@@ -1,6 +1,6 @@
 import type { CountableTimeInterval } from 'd3-time';
 import type { PROResponse } from '../../../shared/api';
-import { min, max } from '../utils';
+import { min, max } from '../../../shared/utils';
 import {
 	rollup,
 	rollups,

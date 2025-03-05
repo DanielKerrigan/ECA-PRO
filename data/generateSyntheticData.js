@@ -1,6 +1,10 @@
 import * as fs from 'fs';
 import * as d3 from 'd3';
 
+function clamp(x, min, max) {
+	return Math.max(min, Math.min(x, max));
+}
+
 fs.readFile('META.csv', 'utf8', (err, contents) => {
 	if (err) {
 		console.error(err);
@@ -43,15 +47,28 @@ fs.readFile('META.csv', 'utf8', (err, contents) => {
 				return d3.timeSecond.offset(d, offsetSeconds);
 			})
 			.filter(() => Math.random() > 0.1);
-		for (const date of dates) {
-			for (const item of meta) {
-				const randomIndex = d3.randomInt(item.responseItemValues.length)();
+
+		for (const item of meta) {
+			let previousResponseIndex = d3.randomInt(item.responseItemValues.length - 1)();
+			let randomChange = d3.randomInt(-1, 2);
+			const maxResponseIndex = item.responseItemValues.length - 2;
+			const didNotRespondIndex = item.responseItemValues.length - 1;
+			for (const date of dates) {
+				const index =
+					Math.random() < 0.1
+						? didNotRespondIndex
+						: clamp(previousResponseIndex + randomChange(), 0, maxResponseIndex);
+
+				if (index !== didNotRespondIndex) {
+					previousResponseIndex = index;
+				}
+
 				const d = {
 					UserID: userID,
 					DateTime: dateFormat(date),
 					ItemID: item.itemID,
-					ResponseValue: item.responseItemValues[randomIndex],
-					ResponseText: item.responseItemStrings[randomIndex]
+					ResponseValue: item.responseItemValues[index],
+					ResponseText: item.responseItemStrings[index]
 				};
 				data.push(d);
 			}

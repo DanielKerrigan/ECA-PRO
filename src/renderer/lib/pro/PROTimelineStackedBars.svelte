@@ -10,6 +10,7 @@
 	import { timeDay, timeWeek, timeMonth } from 'd3-time';
 	import { getAggregatedSummaryData } from './aggregation';
 	import type { AggregatedPROResponses } from './aggregation';
+	import { format } from 'd3-format';
 
 	let {
 		responses,
@@ -20,8 +21,8 @@
 		normalizeBars,
 		width,
 		height = 128,
-		marginLeft = 24,
-		marginTop = 8,
+		marginLeft = 40,
+		marginTop = 24,
 		marginRight = 24,
 		marginBottom = 24
 	}: {
@@ -92,6 +93,7 @@
 		series: Series<AggregatedPROResponses, number>[],
 		x: ScaleTime<number, number>,
 		y: ScaleLinear<number, number>,
+		normalizeBars: boolean,
 		width: number,
 		height: number
 	) {
@@ -120,7 +122,15 @@
 		axis(ctx, 'left', y, {
 			translateX: marginLeft,
 			showTickMarks: true,
-			showDomain: false
+			showDomain: false,
+			tickValues: normalizeBars ? y.ticks(5) : y.ticks(5).filter(Number.isInteger),
+			tickFormat: normalizeBars ? format('.0%') : format('d'),
+			title: normalizeBars ? 'Percentage' : 'Count',
+			titleAnchor: 'top',
+			marginLeft: marginLeft - 5,
+			marginTop: marginTop - 5,
+			marginRight,
+			marginBottom
 		});
 
 		ctx.restore();
@@ -134,7 +144,7 @@
 
 	$effect(() => {
 		if (ctx) {
-			draw(ctx, series, x, y, width, height);
+			draw(ctx, series, x, y, normalizeBars, width, height);
 		}
 	});
 </script>

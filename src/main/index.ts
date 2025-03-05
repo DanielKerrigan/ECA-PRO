@@ -1,49 +1,14 @@
-import type {
-	Data,
-	PROUsersResponses,
-	PROMetaByCategoryConstruct,
-	PROMetaByID,
-	PROResponse,
-	Settings
-} from '../shared/api.js';
+import type { Settings } from '../shared/api.js';
 import type { IpcMainInvokeEvent } from 'electron';
 
 import { app, BrowserWindow, ipcMain, Menu, dialog } from 'electron';
 
-import * as d3 from 'd3';
 import * as path from 'node:path';
-import * as fs from 'node:fs/promises';
-import * as fsSync from 'node:fs';
+import { readSettings, updateSettings } from './settings.js';
+import { getData } from './data.js';
+import { getMenu } from './menu.js';
 
 const __dirname = import.meta.dirname;
-
-function readSettings(path: string): Settings {
-	try {
-		const data: string = fsSync.readFileSync(path, 'utf8');
-		const settings: Settings = JSON.parse(data);
-		return settings;
-	} catch (err) {
-		console.error('Error reading settings', err);
-		return {
-			directory: ''
-		};
-	}
-}
-
-function writeSettings(path: string, settings: Settings): Promise<void> {
-	try {
-		const data = JSON.stringify(settings, null, 2);
-		return fs.writeFile(path, data);
-	} catch (err) {
-		return Promise.reject(err);
-	}
-}
-
-function updateSettings(path: string, settings: Settings): Promise<Settings> {
-	return writeSettings(path, settings).then(() => {
-		return settings;
-	});
-}
 
 function selectDirectory(): Promise<string> {
 	return dialog
@@ -59,66 +24,6 @@ function selectDirectory(): Promise<string> {
 			},
 			(reason) => Promise.reject(reason)
 		);
-}
-
-function getData(directoryPath: string): Promise<Data> {
-	const metaPromise = fs.readFile(path.join(directoryPath, 'META.csv'), 'utf8');
-	const dataPromise = fs.readFile(path.join(directoryPath, 'DATA.csv'), 'utf8');
-
-	return Promise.all([metaPromise, dataPromise]).then(([metaContents, dataContents]) => {
-		const metaRows = d3
-			.csvParse(metaContents, (d) => {
-				const responseItemStrings = d.ResponseItemValues.split('|').map((s) => s.trim());
-				const responseItemValues = d3.range(responseItemStrings.length);
-
-				return {
-					itemID: +d.ItemID,
-					item: d.Item,
-					constructName: d.ConstructName,
-					responseItemType: d.ResponseItemType,
-					responseItemStrings,
-					responseItemValues,
-					bankName: d.BankName,
-					categoryName: d.CategoryName
-				};
-			})
-			.filter((d) => d.item !== '');
-
-		const proMetaByCategoryConstruct: PROMetaByCategoryConstruct = d3.group(
-			metaRows,
-			(d) => d.categoryName,
-			(d) => d.constructName
-		);
-
-		const proMetaByID: PROMetaByID = d3.index(metaRows, (d) => d.itemID);
-
-		const dateParse = d3.timeParse('%Y-%m-%d %H:%M:%S');
-
-		const dataRows = d3
-			.csvParse(dataContents, (d) => {
-				return {
-					userID: +d.UserID,
-					dateTime: dateParse(d.DateTime),
-					itemID: +d.ItemID,
-					responseValue: +d.ResponseValue,
-					responseText: d.ResponseText
-				};
-			})
-			.filter((d): d is PROResponse => d.dateTime !== null);
-
-		const proUsersResponses: PROUsersResponses = d3.rollup(
-			dataRows,
-			(g) => g.sort((a, b) => d3.ascending(a.dateTime, b.dateTime)),
-			(d) => d.userID,
-			(d) => d.itemID
-		);
-
-		return {
-			proMetaByCategoryConstruct,
-			proMetaByID,
-			proUsersResponses
-		};
-	});
 }
 
 const settingsPath = path.join(app.getPath('userData'), 'settings.json');
@@ -141,19 +46,7 @@ function createWindow() {
 
 	// menu
 
-	const menu = Menu.buildFromTemplate([
-		{
-			label: app.name,
-			submenu: [
-				{
-					click: () => win.webContents.send('open-settings'),
-					label: 'Settings'
-				}
-			]
-		}
-	]);
-
-	Menu.setApplicationMenu(menu);
+	Menu.setApplicationMenu(getMenu(app.name, process.platform === 'darwin', win));
 
 	// In development, load from Vite dev server
 	if (process.env.NODE_ENV === 'development') {

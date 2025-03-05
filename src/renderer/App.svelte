@@ -28,11 +28,7 @@
 	{/await}
 
 	{#await dataPromise then data}
-		<Main
-			proMetaByID={data.proMetaByID}
-			proMetaByCategoryConstruct={data.proMetaByCategoryConstruct}
-			proUsersResponses={data.proUsersResponses}
-		/>
+		<Main {data} />
 	{:catch error}
 		<div>{error.message}</div>
 	{/await}

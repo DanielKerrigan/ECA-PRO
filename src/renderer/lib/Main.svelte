@@ -1,28 +1,16 @@
 <script lang="ts">
-	import type {
-		PROItemToResponses,
-		PROMetaByCategoryConstruct,
-		PROMetaByID,
-		PROUsersResponses
-	} from '../../shared/api';
+	import type { Data, PROItemToResponses, PROUserConstructOrders } from '../../shared/api';
 	import Header from './Header.svelte';
 	import type { AggregationLevel } from './pro/aggregation';
 	import PROTable from './pro/PROTable.svelte';
-	import { min, max } from 'd3-array';
+	import { ascending, max, min } from 'd3-array';
 	import { timeDay, timeMonth } from 'd3-time';
 
-	let {
-		proMetaByCategoryConstruct,
-		proMetaByID,
-		proUsersResponses
-	}: {
-		proMetaByCategoryConstruct: PROMetaByCategoryConstruct;
-		proMetaByID: PROMetaByID;
-		proUsersResponses: PROUsersResponses;
-	} = $props();
+	let { data }: { data: Data } = $props();
 
 	let patientID: number | undefined = $state();
 	let patientResponses: PROItemToResponses | undefined = $state();
+	let proPatientConstructs: PROUserConstructOrders | undefined = $state();
 	let minDate: Date | undefined = $state();
 	let maxDate: Date | undefined = $state();
 	let startDate: Date | undefined = $state();
@@ -31,9 +19,12 @@
 	let chartType: string = $state('stacked-bars');
 	let normalizeBars: boolean = $state(false);
 
+	const patientIDs = $derived(Array.from(data.proUsersResponses.keys()).sort(ascending));
+
 	function onChangePatient(newPatientID: number) {
 		patientID = newPatientID;
-		patientResponses = proUsersResponses.get(patientID);
+		patientResponses = data.proUsersResponses.get(patientID);
+		proPatientConstructs = data.proUsersConstructOrders.get(patientID);
 
 		if (patientResponses === undefined) {
 			minDate = undefined;
@@ -47,6 +38,7 @@
 			const maxDateTime = max(patientResponses.values(), (responses) =>
 				max(responses, (response) => response.dateTime)
 			);
+			// TODO: this should be timeDay.ceil(maxDateTime)?
 			maxDate = maxDateTime === undefined ? undefined : timeDay.floor(maxDateTime);
 		}
 
@@ -77,7 +69,7 @@
 
 <div class="flex h-full w-full flex-col gap-4">
 	<Header
-		{proUsersResponses}
+		{patientIDs}
 		{patientID}
 		{startDate}
 		{endDate}
@@ -92,11 +84,11 @@
 		{onChangeChartType}
 		{onChangeNormalizeBars}
 	/>
-	{#if patientResponses && startDate && endDate}
+	{#if patientResponses && proPatientConstructs && startDate && endDate}
 		<PROTable
 			proItemToResponses={patientResponses}
-			{proMetaByCategoryConstruct}
-			{proMetaByID}
+			proMetaByID={data.proMetaByID}
+			{proPatientConstructs}
 			{startDate}
 			{endDate}
 			{aggregationLevel}

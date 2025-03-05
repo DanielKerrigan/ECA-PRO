@@ -1,15 +1,13 @@
 <script lang="ts">
-	import type { PROUsersResponses } from '../../shared/api';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import DateRangeInputs from '$lib/components/ui/DateRangeInputs.svelte';
-	import { ascending } from 'd3-array';
 	import { aggregationLevels, type AggregationLevel } from './pro/aggregation';
 	import { capitalize } from './utils';
 
 	let {
-		proUsersResponses,
+		patientIDs,
 		patientID,
 		startDate,
 		endDate,
@@ -24,7 +22,7 @@
 		onChangeChartType,
 		onChangeNormalizeBars
 	}: {
-		proUsersResponses: PROUsersResponses;
+		patientIDs: number[];
 		patientID: number | undefined;
 		startDate: Date | undefined;
 		endDate: Date | undefined;
@@ -40,11 +38,6 @@
 		onChangeNormalizeBars: (normalize: boolean) => void;
 	} = $props();
 
-	const patiendIDs = $derived(
-		Array.from(proUsersResponses.keys())
-			.sort(ascending)
-			.map((d) => d.toString())
-	);
 	const triggerContent = $derived(patientID ?? 'Select a patient');
 </script>
 
@@ -62,8 +55,8 @@
 				{triggerContent}
 			</Select.Trigger>
 			<Select.Content>
-				{#each patiendIDs as patientID}
-					<Select.Item value={patientID} label={patientID} />
+				{#each patientIDs as patientID}
+					<Select.Item value={patientID.toString()} label={patientID.toString()} />
 				{/each}
 			</Select.Content>
 		</Select.Root>
