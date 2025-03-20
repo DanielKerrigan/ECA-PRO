@@ -55,7 +55,7 @@
 </script>
 
 <div
-	class="table-container grid h-full w-full grid-cols-3 gap-px overflow-y-auto border border-neutral-200 bg-neutral-200"
+	class="table-container grid h-full w-full gap-px overflow-y-auto border border-neutral-200 bg-neutral-200"
 >
 	<div class="sticky top-0 z-10 flex gap-1 bg-neutral-200 px-2 py-1 uppercase">
 		<div class="font-semibold">Symptom</div>
@@ -76,7 +76,7 @@
 			}}
 		/>
 	</div>
-	<div class="sticky top-0 z-10 bg-neutral-200 px-2 py-1 font-semibold uppercase">Attribute</div>
+	<div class="sticky top-0 z-10 bg-neutral-200 px-2 py-1 font-semibold uppercase">PRO Measure</div>
 	<div
 		class="sticky top-0 z-10 bg-neutral-200 px-2 py-1 font-semibold uppercase"
 		bind:clientWidth={visWidth}
@@ -90,8 +90,14 @@
 				{construct}
 			</div>
 			{#each items as item}
-				<div class="flex items-center bg-white px-2 py-1">
-					<div>{item.responseItemType}</div>
+				<div class="flex items-center gap-1 bg-white px-2 py-1">
+					<div class="flex flex-col">
+						{#if item.bankName.toLocaleLowerCase() !== item.responseItemType.toLocaleLowerCase()}
+							<div>{item.bankName}</div>
+						{/if}
+						<div>{item.responseItemType}</div>
+					</div>
+
 					<Popover.Root>
 						<Popover.Trigger
 							class={cn([buttonVariants({ variant: 'ghost', size: 'icon' }), 'size-6'])}
@@ -141,8 +147,8 @@
 <style>
 	.table-container {
 		grid-template-columns:
-			minmax(min-content, 4rem)
-			minmax(min-content, 4rem)
+			12rem
+			12rem
 			minmax(0, 1fr);
 	}
 </style>

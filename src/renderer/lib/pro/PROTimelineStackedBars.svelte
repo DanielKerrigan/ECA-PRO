@@ -103,7 +103,7 @@
 		ctx.fillRect(0, 0, width, height);
 
 		for (const layer of series) {
-			ctx.fillStyle = getPROColor(layer.key, item.responseItemValues);
+			ctx.fillStyle = getPROColor(item.normalizedResponseItemValues[layer.key]);
 			for (const point of layer) {
 				const left = x(point.data.start) + 1;
 				const right = x(point.data.end) - 1;

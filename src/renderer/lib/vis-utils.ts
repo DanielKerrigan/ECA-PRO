@@ -75,14 +75,12 @@ export function fitString(ctx: CanvasRenderingContext2D, str: string, maxWidth: 
 	return str.substring(0, index) + ellipsis;
 }
 
-// TODO: use normalized value isntead?
-export function getPROColor(value: number, responseItemValues: number[]): string {
-	if (value === 0) {
+export function getPROColor(normalizedResponseValue: number): string {
+	if (normalizedResponseValue === 0) {
 		return '#07b63f';
-	} else if (value === responseItemValues.length - 1) {
+	} else if (normalizedResponseValue === -1) {
 		return '#737373';
 	} else {
-		const percent = value / (responseItemValues.length - 2);
-		return interpolateOrRd(percent);
+		return interpolateOrRd(normalizedResponseValue);
 	}
 }

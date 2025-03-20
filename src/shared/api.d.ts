@@ -1,7 +1,9 @@
 import type { InternMap } from 'd3';
 
 export type Settings = {
-	directory: string;
+	proMetaPath: string;
+	proDataPath: string;
+	treatmentPaths: string[];
 };
 
 // Meta
@@ -14,6 +16,7 @@ export type PROItem = {
 	responseItemType: string;
 	responseItemStrings: string[];
 	responseItemValues: number[];
+	normalizedResponseItemValues: number[];
 	bankName: string;
 	categoryName: string;
 };
@@ -62,7 +65,7 @@ export type Data = {
 export type ElectronAPI = {
 	getSettings: () => Promise<Settings>;
 	updateSettings: (newSettings: Settings) => Promise<Settings>;
-	selectDirectory: () => Promise<string>;
+	selectFilePaths: (allowMultiple: boolean) => Promise<string[]>;
 	onSettingsMenuClicked: (callback: () => void) => void;
-	getData: (path: string) => Promise<Data>;
+	getData: (settings: Settings) => Promise<Data>;
 };

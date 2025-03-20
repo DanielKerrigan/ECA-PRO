@@ -1,12 +1,10 @@
-import type { PROMetaByID, PROResponse, PROItem, PROUsersResponses } from '../shared/api.js';
+import type { PROMetaByID, PROResponse, PROItem, PROUsersResponses } from '../../shared/api.js';
 
 import * as d3 from 'd3';
 
-export function getPROResponses(
-	dataContents: string,
-	proMetaByID: PROMetaByID,
-	dateParse: (d: string) => Date | null
-): PROResponse[] {
+export function getPROResponses(dataContents: string, proMetaByID: PROMetaByID): PROResponse[] {
+	const dateParse = d3.timeParse('%Y-%m-%d %H:%M:%S');
+
 	return (
 		d3
 			.csvParse(dataContents, (d) => {
@@ -16,10 +14,8 @@ export function getPROResponses(
 				// TODO: properly handle this type
 				const item = proMetaByID.get(itemID) as PROItem;
 
-				const numResponses = item.responseItemStrings.length;
-				// TODO: verify that Prefer not to say is the last response value
-				const normalizedResponseValue =
-					responseText === 'Prefer not to say' ? -1 : responseValue / (numResponses - 1);
+				const normalizedResponseValue = item.normalizedResponseItemValues[responseValue];
+
 				return {
 					userID: +d.UserID,
 					dateTime: dateParse(d.DateTime),

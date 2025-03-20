@@ -7,7 +7,7 @@
 	let showSettingsModal = $state(false);
 
 	const dataPromise: Promise<Data> = $derived(
-		settingsPromise.then((v) => window.api.getData(v.directory))
+		settingsPromise.then((settings) => window.api.getData(settings))
 	);
 
 	window.api.onSettingsMenuClicked(() => {

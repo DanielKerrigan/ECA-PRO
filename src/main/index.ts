@@ -1,39 +1,25 @@
 import type { Settings } from '../shared/api.js';
 import type { IpcMainInvokeEvent } from 'electron';
 
-import { app, BrowserWindow, ipcMain, Menu, dialog } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu } from 'electron';
 
 import * as path from 'node:path';
-import { readSettings, updateSettings } from './settings.js';
+import { readSettings, selectFilePaths, writeSettings } from './settings.js';
 import { getData } from './data.js';
 import { getMenu } from './menu.js';
 
 const __dirname = import.meta.dirname;
 
-function selectDirectory(): Promise<string> {
-	return dialog
-		.showOpenDialog({
-			properties: ['openDirectory']
-		})
-		.then(
-			(result) => {
-				if (result.canceled || result.filePaths.length == 0) {
-					return Promise.reject('canceled');
-				}
-				return result.filePaths[0];
-			},
-			(reason) => Promise.reject(reason)
-		);
-}
-
 const settingsPath = path.join(app.getPath('userData'), 'settings.json');
 
 ipcMain.handle('get-settings', () => readSettings(settingsPath));
-ipcMain.handle('select-directory', () => selectDirectory());
-ipcMain.handle('update-settings', (_event: IpcMainInvokeEvent, newSettings: Settings) =>
-	updateSettings(settingsPath, newSettings)
+ipcMain.handle('select-file-paths', (_event: IpcMainInvokeEvent, allowMultiple: boolean) =>
+	selectFilePaths(allowMultiple)
 );
-ipcMain.handle('get-data', (_event: IpcMainInvokeEvent, path: string) => getData(path));
+ipcMain.handle('update-settings', (_event: IpcMainInvokeEvent, newSettings: Settings) =>
+	writeSettings(settingsPath, newSettings)
+);
+ipcMain.handle('get-data', (_event: IpcMainInvokeEvent, settings: Settings) => getData(settings));
 
 function createWindow() {
 	const preloadPath = path.join(__dirname, '../preload/index.cjs');

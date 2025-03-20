@@ -7,19 +7,21 @@
 	}: {
 		item: PROItem;
 	} = $props();
+
+	const I = $derived([
+		...item.responseItemValues.slice(0, -1).reverse(),
+		item.responseItemValues[item.responseItemValues.length - 1]
+	]);
 </script>
 
-{#snippet swatch(value: number, item: PROItem)}
-	<div class="flex items-center gap-2">
-		<div class="h-4 w-4" style:background-color={getPROColor(value, item.responseItemValues)}></div>
-		<div>{item.responseItemStrings[value]}</div>
-	</div>
-{/snippet}
-
 <div>
-	{#each item.responseItemValues.slice(1, -1).reverse() as value}
-		{@render swatch(value, item)}
+	{#each I as i}
+		<div class="flex items-center gap-2">
+			<div
+				class="h-4 w-4"
+				style:background-color={getPROColor(item.normalizedResponseItemValues[i])}
+			></div>
+			<div>{item.responseItemStrings[i]}</div>
+		</div>
 	{/each}
-	{@render swatch(0, item)}
-	{@render swatch(item.responseItemValues.length - 1, item)}
 </div>

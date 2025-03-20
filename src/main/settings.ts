@@ -1,33 +1,38 @@
 import type { Settings } from '../shared/api.js';
 
-import * as fs from 'node:fs/promises';
-import * as fsSync from 'node:fs';
+import { dialog, OpenDialogOptions } from 'electron';
 
-export function readSettings(path: string): Settings {
-	try {
-		// TODO: switch to async
-		const data: string = fsSync.readFileSync(path, 'utf8');
-		const settings: Settings = JSON.parse(data);
-		return settings;
-	} catch (err) {
-		console.error('Error reading settings', err);
-		return {
-			directory: ''
-		};
-	}
+import * as fs from 'node:fs/promises';
+
+export function selectFilePaths(allowMultiple: boolean): Promise<string[]> {
+	const properties: OpenDialogOptions['properties'] = allowMultiple
+		? ['openFile', 'multiSelections']
+		: ['openFile'];
+	return dialog
+		.showOpenDialog({
+			filters: [{ name: 'CSV', extensions: ['csv'] }],
+			properties
+		})
+		.then((result) => {
+			if (result.canceled || result.filePaths.length == 0) {
+				return Promise.reject('canceled');
+			}
+			return result.filePaths;
+		});
 }
 
-export function writeSettings(path: string, settings: Settings): Promise<void> {
+export function readSettings(path: string): Promise<Settings> {
+	return fs
+		.readFile(path, 'utf8')
+		.then((data) => JSON.parse(data))
+		.catch(() => ({ proMetaPath: '', proDataPath: '', treatmentPaths: [] }));
+}
+
+export function writeSettings(path: string, settings: Settings): Promise<Settings> {
 	try {
 		const data = JSON.stringify(settings, null, 2);
-		return fs.writeFile(path, data);
+		return fs.writeFile(path, data).then(() => settings);
 	} catch (err) {
 		return Promise.reject(err);
 	}
-}
-
-export function updateSettings(path: string, settings: Settings): Promise<Settings> {
-	return writeSettings(path, settings).then(() => {
-		return settings;
-	});
 }

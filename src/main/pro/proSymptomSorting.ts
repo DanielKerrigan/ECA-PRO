@@ -3,10 +3,10 @@ import type {
 	PROResponse,
 	PROUserConstructOrders,
 	PROUsersConstructOrders
-} from '../shared/api.js';
+} from '../../shared/api.js';
 
 import * as d3 from 'd3';
-import { max } from '../shared/utils.js';
+import { max } from '../../shared/utils.js';
 
 function compareRecentSeverity(
 	a: { [key: string]: any; meanNormalizedValue: number; numResponses: number },

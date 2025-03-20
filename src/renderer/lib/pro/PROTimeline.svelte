@@ -94,15 +94,11 @@
 
 		for (const response of responses) {
 			const barX = x(response.dateTime) - barWidth / 2;
-			if (
-				response.responseValue === 0 ||
-				response.responseValue === item.responseItemValues[item.responseItemValues.length - 1]
-			) {
-				ctx.fillStyle = getPROColor(response.responseValue, item.responseItemValues);
+			ctx.fillStyle = getPROColor(response.normalizedResponseValue);
+
+			if (response.normalizedResponseValue === -1 || response.normalizedResponseValue === 0) {
 				ctx.fillRect(barX, y.range()[0], barWidth, baselineHeight);
 			} else {
-				const percent = response.responseValue / (item.responseItemValues.length - 2);
-				ctx.fillStyle = interpolateOrRd(percent);
 				ctx.fillRect(
 					barX,
 					y(response.responseValue),
