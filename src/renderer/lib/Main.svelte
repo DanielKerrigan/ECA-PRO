@@ -16,7 +16,6 @@
 	let startDate: Date | undefined = $state();
 	let endDate: Date | undefined = $state();
 	let aggregationLevel: AggregationLevel = $state('none');
-	let chartType: string = $state('stacked-bars');
 	let normalizeBars: boolean = $state(false);
 
 	const patientIDs = $derived(Array.from(data.proUsersResponses.keys()).sort(ascending));
@@ -58,10 +57,6 @@
 		aggregationLevel = level;
 	}
 
-	function onChangeChartType(ct: string) {
-		chartType = ct;
-	}
-
 	function onChangeNormalizeBars(normalize: boolean) {
 		normalizeBars = normalize;
 	}
@@ -76,12 +71,10 @@
 		{minDate}
 		{maxDate}
 		{aggregationLevel}
-		{chartType}
 		{normalizeBars}
 		{onChangePatient}
 		{onChangeDates}
 		{onChangeAggregationLevel}
-		{onChangeChartType}
 		{onChangeNormalizeBars}
 	/>
 	{#if patientResponses && proPatientConstructs && startDate && endDate}
@@ -92,7 +85,6 @@
 			{startDate}
 			{endDate}
 			{aggregationLevel}
-			{chartType}
 			{normalizeBars}
 		/>
 	{/if}

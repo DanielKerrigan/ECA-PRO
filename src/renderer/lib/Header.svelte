@@ -14,12 +14,10 @@
 		minDate,
 		maxDate,
 		aggregationLevel,
-		chartType,
 		normalizeBars,
 		onChangePatient,
 		onChangeDates,
 		onChangeAggregationLevel,
-		onChangeChartType,
 		onChangeNormalizeBars
 	}: {
 		patientIDs: number[];
@@ -29,12 +27,10 @@
 		minDate: Date | undefined;
 		maxDate: Date | undefined;
 		aggregationLevel: AggregationLevel;
-		chartType: string;
 		normalizeBars: boolean;
 		onChangePatient: (newPatientID: number) => void;
 		onChangeDates: (start: Date, end: Date) => void;
 		onChangeAggregationLevel: (level: AggregationLevel) => void;
-		onChangeChartType: (chartType: string) => void;
 		onChangeNormalizeBars: (normalize: boolean) => void;
 	} = $props();
 
@@ -87,35 +83,14 @@
 
 		{#if aggregationLevel !== 'none'}
 			<div class="flex flex-none items-center gap-2">
-				<Label for="chart-select" class="text-base">Chart Type</Label>
-				<Select.Root
-					type="single"
-					value={chartType}
-					onValueChange={(value) => {
-						onChangeChartType(value);
-					}}
-				>
-					<Select.Trigger id="chart-select" class="w-fit">
-						{chartType}
-					</Select.Trigger>
-					<Select.Content>
-						<Select.Item value={'stacked-bar'} label={'stacked-bar'} />
-						<Select.Item value={'line'} label={'line'} />
-					</Select.Content>
-				</Select.Root>
+				<Checkbox
+					id="normalize-select"
+					checked={normalizeBars}
+					onCheckedChange={onChangeNormalizeBars}
+					aria-labelledby="normalize-label"
+				/>
+				<Label id="normalize-label" for="normalize-select" class="text-base">Normalize</Label>
 			</div>
-
-			{#if chartType === 'stacked-bar'}
-				<div class="flex flex-none items-center gap-2">
-					<Checkbox
-						id="normalize-select"
-						checked={normalizeBars}
-						onCheckedChange={onChangeNormalizeBars}
-						aria-labelledby="normalize-label"
-					/>
-					<Label id="normalize-label" for="normalize-select" class="text-base">Normalize</Label>
-				</div>
-			{/if}
 		{/if}
 	{/if}
 </div>

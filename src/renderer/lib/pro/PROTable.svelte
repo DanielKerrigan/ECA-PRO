@@ -11,7 +11,6 @@
 	import { cn } from '../utils';
 	import PROTableSymptomFilter from './PROTableSymptomFilter.svelte';
 	import PROTableSymptomSorting from './PROTableSymptomSorting.svelte';
-	import PROTimelineAggregatedLine from './PROTimelineAggregatedLine.svelte';
 	import PROTimelineStackedBars from './PROTimelineStackedBars.svelte';
 	import type { AggregationLevel } from './aggregation';
 	import { getPROMetaByConstruct } from './symptoms.svelte';
@@ -25,7 +24,6 @@
 		startDate,
 		endDate,
 		aggregationLevel,
-		chartType,
 		normalizeBars
 	}: {
 		proMetaByID: PROMetaByID;
@@ -34,7 +32,6 @@
 		startDate: Date;
 		endDate: Date;
 		aggregationLevel: AggregationLevel;
-		chartType: string;
 		normalizeBars: boolean;
 	} = $props();
 
@@ -113,15 +110,6 @@
 					{#if aggregationLevel === 'none'}
 						<PROTimeline
 							{item}
-							responses={proItemToResponses.get(item.itemID) ?? []}
-							width={visWidth}
-							{startDate}
-							{endDate}
-						/>
-					{:else if chartType === 'line'}
-						<PROTimelineAggregatedLine
-							{item}
-							{aggregationLevel}
 							responses={proItemToResponses.get(item.itemID) ?? []}
 							width={visWidth}
 							{startDate}
