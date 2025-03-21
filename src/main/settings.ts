@@ -1,23 +1,20 @@
 import type { Settings } from '../shared/api.js';
 
-import { dialog, OpenDialogOptions } from 'electron';
+import { dialog } from 'electron';
 
 import * as fs from 'node:fs/promises';
 
-export function selectFilePaths(allowMultiple: boolean): Promise<string[]> {
-	const properties: OpenDialogOptions['properties'] = allowMultiple
-		? ['openFile', 'multiSelections']
-		: ['openFile'];
+export function selectFilePath(): Promise<string> {
 	return dialog
 		.showOpenDialog({
 			filters: [{ name: 'CSV', extensions: ['csv'] }],
-			properties
+			properties: ['openFile']
 		})
 		.then((result) => {
 			if (result.canceled || result.filePaths.length == 0) {
 				return Promise.reject('canceled');
 			}
-			return result.filePaths;
+			return result.filePaths[0];
 		});
 }
 

@@ -4,7 +4,7 @@ import type { IpcMainInvokeEvent } from 'electron';
 import { app, BrowserWindow, ipcMain, Menu } from 'electron';
 
 import * as path from 'node:path';
-import { readSettings, selectFilePaths, writeSettings } from './settings.js';
+import { readSettings, selectFilePath, writeSettings } from './settings.js';
 import { getData } from './data.js';
 import { getMenu } from './menu.js';
 
@@ -13,9 +13,7 @@ const __dirname = import.meta.dirname;
 const settingsPath = path.join(app.getPath('userData'), 'settings.json');
 
 ipcMain.handle('get-settings', () => readSettings(settingsPath));
-ipcMain.handle('select-file-paths', (_event: IpcMainInvokeEvent, allowMultiple: boolean) =>
-	selectFilePaths(allowMultiple)
-);
+ipcMain.handle('select-file-path', (_event: IpcMainInvokeEvent) => selectFilePath());
 ipcMain.handle('update-settings', (_event: IpcMainInvokeEvent, newSettings: Settings) =>
 	writeSettings(settingsPath, newSettings)
 );

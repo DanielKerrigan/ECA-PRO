@@ -23,17 +23,17 @@
 		newSettings = $state.snapshot(settings);
 	});
 
-	function onSelectPROMetaFile() {
-		window.api.selectFilePaths(false).then((paths) => (newSettings.proMetaPath = paths[0]));
+	function onSelectFile(onfulfilled: (path: string) => void) {
+		window.api.selectFilePath().then(onfulfilled);
 	}
 
-	function onSelectPRODataFile() {
-		window.api.selectFilePaths(false).then((paths) => (newSettings.proDataPath = paths[0]));
-	}
-
-	function onSelectTreatmentFiles() {
-		window.api.selectFilePaths(true).then((paths) => (newSettings.treatmentPaths = paths));
-	}
+	const pathInputs: { label: string; key: keyof Settings }[] = [
+		{ label: 'PRO Meta', key: 'proMetaPath' },
+		{ label: 'PRO Data', key: 'proDataPath' },
+		{ label: 'Radiation Treatment', key: 'radiationPath' },
+		{ label: 'Injection Treatment', key: 'injectionPath' },
+		{ label: 'Oral Treatment', key: 'oralPath' }
+	];
 
 	function onClickSave() {
 		window.api.updateSettings($state.snapshot(newSettings)).then((value) => {
@@ -50,47 +50,25 @@
 		}
 	}}
 >
-	<Dialog.Content>
+	<Dialog.Content class="max-h-screen grid-rows-[auto_1fr_auto]">
 		<Dialog.Header>
 			<Dialog.Title>Settings</Dialog.Title>
 		</Dialog.Header>
 
-		<div class="flex min-w-0 max-w-full flex-col gap-4">
-			<div class="flex flex-col gap-2">
-				<div class="font-semibold">PRO Data</div>
-				<div class="overflow-x-auto whitespace-nowrap">
-					{newSettings.proDataPath || 'No file selected'}
+		<div class="min-h-0 min-w-0 max-w-full space-y-4 overflow-y-auto">
+			{#each pathInputs as { label, key }}
+				<div class="space-y-2">
+					<div class="font-semibold">{label}</div>
+					<div class="overflow-x-auto whitespace-nowrap">
+						{newSettings[key] || 'No file selected'}
+					</div>
+					<Button
+						variant="secondary"
+						class="self-start py-2"
+						onclick={() => onSelectFile((path) => (newSettings[key] = path))}>Select File</Button
+					>
 				</div>
-				<Button variant="secondary" class="self-start py-2" onclick={onSelectPRODataFile}
-					>Select File</Button
-				>
-			</div>
-
-			<div class="flex flex-col gap-2">
-				<div class="font-semibold">PRO Meta</div>
-				<div class="overflow-x-auto whitespace-nowrap">
-					{newSettings.proMetaPath || 'No file selected'}
-				</div>
-				<Button variant="secondary" class="self-start py-2" onclick={onSelectPROMetaFile}
-					>Select File</Button
-				>
-			</div>
-
-			<div class="flex flex-col gap-2">
-				<div class="font-semibold">Treatment</div>
-				<div>
-					{#if newSettings.treatmentPaths.length > 0}
-						{#each newSettings.treatmentPaths as path}
-							<div class="overflow-x-auto whitespace-nowrap">{path}</div>
-						{/each}
-					{:else}
-						<div>No files selected</div>
-					{/if}
-				</div>
-				<Button variant="secondary" class="self-start py-2" onclick={onSelectTreatmentFiles}>
-					Select Files
-				</Button>
-			</div>
+			{/each}
 		</div>
 
 		<Dialog.Footer>

@@ -4,8 +4,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 const api: ElectronAPI = {
 	getSettings: () => ipcRenderer.invoke('get-settings'),
 	updateSettings: (newSettings: Settings) => ipcRenderer.invoke('update-settings', newSettings),
-	selectFilePaths: (allowMultiple: boolean) =>
-		ipcRenderer.invoke('select-file-paths', allowMultiple),
+	selectFilePath: () => ipcRenderer.invoke('select-file-path'),
 	onSettingsMenuClicked: (callback: () => void) =>
 		ipcRenderer.on('open-settings', () => callback()),
 	getData: (settings: Settings) => ipcRenderer.invoke('get-data', settings)

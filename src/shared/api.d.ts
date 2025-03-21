@@ -3,7 +3,9 @@ import type { InternMap } from 'd3';
 export type Settings = {
 	proMetaPath: string;
 	proDataPath: string;
-	treatmentPaths: string[];
+	radiationPath: string;
+	injectionPath: string;
+	oralPath: string;
 };
 
 // Meta
@@ -65,7 +67,7 @@ export type Data = {
 export type ElectronAPI = {
 	getSettings: () => Promise<Settings>;
 	updateSettings: (newSettings: Settings) => Promise<Settings>;
-	selectFilePaths: (allowMultiple: boolean) => Promise<string[]>;
+	selectFilePath: () => Promise<string>;
 	onSettingsMenuClicked: (callback: () => void) => void;
 	getData: (settings: Settings) => Promise<Data>;
 };
