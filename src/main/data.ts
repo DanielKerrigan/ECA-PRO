@@ -15,28 +15,23 @@ import { getUsersConstructOrders } from './pro/proSymptomSorting.js';
 export function getData(settings: Settings): Promise<Data> {
 	const metaPromise = fs.readFile(settings.proMetaPath, 'utf8');
 	const dataPromise = fs.readFile(settings.proDataPath, 'utf8');
-	const radiationPath = fs.readFile(settings.radiationPath, 'utf8');
-	const injectionPath = fs.readFile(settings.injectionPath, 'utf8');
-	const oralPath = fs.readFile(settings.oralPath, 'utf8');
 
-	return Promise.all([metaPromise, dataPromise, radiationPath, injectionPath, oralPath]).then(
-		([metaContents, dataContents, radiationContents, injectionContents, oralContents]) => {
-			const proItems: PROItem[] = getPROItems(metaContents);
-			const proMetaByID = groupPROItems(proItems);
+	return Promise.all([metaPromise, dataPromise]).then(([metaContents, dataContents]) => {
+		const proItems: PROItem[] = getPROItems(metaContents);
+		const proMetaByID = groupPROItems(proItems);
 
-			const allProReponses: PROResponse[] = getPROResponses(dataContents, proMetaByID);
-			const proUsersResponses: PROUsersResponses = groupPROResponses(allProReponses);
+		const allProReponses: PROResponse[] = getPROResponses(dataContents, proMetaByID);
+		const proUsersResponses: PROUsersResponses = groupPROResponses(allProReponses);
 
-			const proUsersConstructOrders: PROUsersConstructOrders = getUsersConstructOrders(
-				proMetaByID,
-				allProReponses
-			);
+		const proUsersConstructOrders: PROUsersConstructOrders = getUsersConstructOrders(
+			proMetaByID,
+			allProReponses
+		);
 
-			return {
-				proMetaByID,
-				proUsersResponses,
-				proUsersConstructOrders
-			};
-		}
-	);
+		return {
+			proMetaByID,
+			proUsersResponses,
+			proUsersConstructOrders
+		};
+	});
 }

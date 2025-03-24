@@ -1,5 +1,7 @@
-import type { ElectronAPI, Settings } from '../shared/api' with { 'resolution-mode': 'require' };
-const { contextBridge, ipcRenderer } = require('electron');
+// import type { ElectronAPI, Settings } from '../shared/api' with { 'resolution-mode': 'require' };
+// const { contextBridge, ipcRenderer } = require('electron');
+import type { ElectronAPI, Settings } from '../shared/api.ts';
+import { contextBridge, ipcRenderer } from 'electron';
 
 const api: ElectronAPI = {
 	getSettings: () => ipcRenderer.invoke('get-settings'),

@@ -1,6 +1,7 @@
 # My additions
 
 data/*.csv
+.vite
 
 # Logs
 logs
@@ -28,3 +29,5 @@ dist-ssr
 *.sw?
 
 app/electron/build
+
+out/

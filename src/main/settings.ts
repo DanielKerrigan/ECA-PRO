@@ -21,8 +21,14 @@ export function selectFilePath(): Promise<string> {
 export function readSettings(path: string): Promise<Settings> {
 	return fs
 		.readFile(path, 'utf8')
-		.then((data) => JSON.parse(data))
-		.catch(() => ({ proMetaPath: '', proDataPath: '', treatmentPaths: [] }));
+		.then<Settings>((data) => JSON.parse(data))
+		.catch<Settings>(() => ({
+			proMetaPath: '',
+			proDataPath: '',
+			radiationPath: '',
+			injectionPath: '',
+			oralPath: ''
+		}));
 }
 
 export function writeSettings(path: string, settings: Settings): Promise<Settings> {
