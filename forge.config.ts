@@ -54,7 +54,7 @@ const config: ForgeConfig = {
 			name: '@electron-forge/publisher-github',
 			config: {
 				repository: {
-					owner: 'Daniel Kerrigan',
+					owner: 'DanielKerrigan',
 					name: 'ECA-PRO'
 				}
 			}
