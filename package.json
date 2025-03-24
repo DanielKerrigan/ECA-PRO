@@ -12,7 +12,8 @@
 		"test": "vitest",
 		"start": "electron-forge start",
 		"package": "electron-forge package",
-		"make": "electron-forge make"
+		"make": "electron-forge make",
+		"publish": "electron-forge publish"
 	},
 	"devDependencies": {
 		"@electron-forge/cli": "^7.7.0",
@@ -23,6 +24,7 @@
 		"@electron-forge/plugin-auto-unpack-natives": "^7.7.0",
 		"@electron-forge/plugin-fuses": "^7.7.0",
 		"@electron-forge/plugin-vite": "^7.7.0",
+		"@electron-forge/publisher-github": "^7.7.0",
 		"@electron/fuses": "^1.8.0",
 		"@internationalized/date": "^3.7.0",
 		"@sveltejs/vite-plugin-svelte": "^5.0.0",
@@ -48,7 +50,7 @@
 		"tailwindcss-animate": "^1.0.7",
 		"tslib": "^2.8.1",
 		"typescript": "~5.6.2",
-		"vite": "^6.0.1",
+		"vite": "^6.0.9",
 		"vitest": "^3.0.0"
 	},
 	"dependencies": {
