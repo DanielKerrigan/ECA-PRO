@@ -5,6 +5,8 @@
 	"version": "0.0.0",
 	"main": ".vite/build/main.js",
 	"type": "module",
+	"author": "Daniel Kerrigan",
+	"description": "ECA-PRO visualization tool",
 	"scripts": {
 		"clean": "rimraf ./.vite && rimraf out && rimraf ./node_modules/.tmp/tsconfig.node.tsbuildinfo && rimraf \"$HOME/Library/Application Support/ECA-PRO/settings.json\"",
 		"check": "svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json",
