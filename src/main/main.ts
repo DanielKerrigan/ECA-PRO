@@ -1,5 +1,6 @@
 import type { Settings } from '../shared/api.js';
 import type { IpcMainInvokeEvent } from 'electron';
+import log from 'electron-log';
 
 import { app, BrowserWindow, ipcMain, Menu } from 'electron';
 
@@ -13,8 +14,11 @@ import started from 'electron-squirrel-startup';
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string;
 declare const MAIN_WINDOW_VITE_NAME: string;
 
+log.info('Running main');
+
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
+	log.info('Handling shortcut. Quitting.');
 	app.quit();
 }
 
@@ -30,6 +34,8 @@ ipcMain.handle('update-settings', (_event: IpcMainInvokeEvent, newSettings: Sett
 ipcMain.handle('get-data', (_event: IpcMainInvokeEvent, settings: Settings) => getData(settings));
 
 function createWindow() {
+	log.info('Creating window');
+
 	const preloadPath = path.join(__dirname, 'preload.cjs');
 	const win = new BrowserWindow({
 		webPreferences: {
@@ -54,6 +60,8 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+	log.info('App ready');
+
 	createWindow();
 
 	app.on('activate', () => {
@@ -72,11 +80,13 @@ app.on('window-all-closed', () => {
 app.on('web-contents-created', (event, contents) => {
 	// https://www.electronjs.org/docs/latest/tutorial/security#13-disable-or-limit-navigation
 	contents.on('will-navigate', (event, navigationUrl) => {
+		log.info('Preventing navigation');
 		event.preventDefault();
 	});
 
 	// https://www.electronjs.org/docs/latest/tutorial/security#14-disable-or-limit-creation-of-new-windows
 	contents.setWindowOpenHandler(({ url }) => {
+		log.info('Denying window open');
 		return { action: 'deny' };
 	});
 });

@@ -23,13 +23,9 @@
 			onClose={() => (showSettingsModal = false)}
 			onUpdateSettings={(newSettings) => (settingsPromise = Promise.resolve(newSettings))}
 		/>
-	{:catch error}
-		<div>{error.message}</div>
 	{/await}
 
 	{#await dataPromise then data}
 		<Main {data} />
-	{:catch error}
-		<div>{error.message}</div>
 	{/await}
 </div>

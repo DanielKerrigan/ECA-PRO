@@ -29,7 +29,7 @@ fs.readFile('META.csv', 'utf8', (err, contents) => {
 		})
 		.filter((d) => d.item !== '');
 
-	const userIDs = d3.range(0, 5);
+	const userIDs = [0, 1];
 
 	const dateSpecifier = '%Y-%m-%d %H:%M:%S';
 	const dateFormat = d3.timeFormat(dateSpecifier);
