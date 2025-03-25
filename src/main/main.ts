@@ -80,13 +80,13 @@ app.on('window-all-closed', () => {
 app.on('web-contents-created', (event, contents) => {
 	// https://www.electronjs.org/docs/latest/tutorial/security#13-disable-or-limit-navigation
 	contents.on('will-navigate', (event, navigationUrl) => {
-		log.info('Preventing navigation');
+		log.warn('Preventing navigation');
 		event.preventDefault();
 	});
 
 	// https://www.electronjs.org/docs/latest/tutorial/security#14-disable-or-limit-creation-of-new-windows
 	contents.setWindowOpenHandler(({ url }) => {
-		log.info('Denying window open');
+		log.warn('Denying window open');
 		return { action: 'deny' };
 	});
 });
