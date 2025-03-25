@@ -45,14 +45,14 @@
 		}
 	}}
 >
-	<Dialog.Content class="max-h-screen grid-rows-[auto_1fr_auto]">
-		<Dialog.Header>
+	<Dialog.Content class="max-h-screen grid-rows-[auto_minmax(0,1fr)_auto]">
+		<Dialog.Header class="px-1">
 			<Dialog.Title>Settings</Dialog.Title>
 		</Dialog.Header>
 
-		<div class="min-h-0 min-w-0 max-w-full space-y-4 overflow-y-auto">
+		<div class="flex min-h-0 min-w-0 max-w-full flex-col gap-4 overflow-y-auto p-1">
 			{#each pathInputs as { label, key }}
-				<div class="space-y-2">
+				<div class="flex flex-col gap-2">
 					<div class="font-semibold">{label}</div>
 					<div class="overflow-x-auto whitespace-nowrap">
 						{newSettings[key] || 'No file selected'}
