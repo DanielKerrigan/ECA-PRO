@@ -34,7 +34,8 @@ function createWindow() {
 	const win = new BrowserWindow({
 		webPreferences: {
 			preload: preloadPath
-		}
+		},
+		icon: path.join(__dirname, 'assets/icons/app-icon-512.png')
 	});
 	win.maximize();
 
@@ -66,4 +67,16 @@ app.on('window-all-closed', () => {
 	if (process.platform !== 'darwin') {
 		app.quit();
 	}
+});
+
+app.on('web-contents-created', (event, contents) => {
+	// https://www.electronjs.org/docs/latest/tutorial/security#13-disable-or-limit-navigation
+	contents.on('will-navigate', (event, navigationUrl) => {
+		event.preventDefault();
+	});
+
+	// https://www.electronjs.org/docs/latest/tutorial/security#14-disable-or-limit-creation-of-new-windows
+	contents.setWindowOpenHandler(({ url }) => {
+		return { action: 'deny' };
+	});
 });

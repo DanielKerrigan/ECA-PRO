@@ -1,18 +1,40 @@
 import type { ForgeConfig } from '@electron-forge/shared-types';
 import { MakerSquirrel } from '@electron-forge/maker-squirrel';
 import { MakerZIP } from '@electron-forge/maker-zip';
+import { MakerDMG } from '@electron-forge/maker-dmg';
 import { MakerDeb } from '@electron-forge/maker-deb';
 import { MakerRpm } from '@electron-forge/maker-rpm';
 import { VitePlugin } from '@electron-forge/plugin-vite';
+import { AutoUnpackNativesPlugin } from '@electron-forge/plugin-auto-unpack-natives';
+import { ElectronegativityPlugin } from '@electron-forge/plugin-electronegativity';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
 
 const config: ForgeConfig = {
 	packagerConfig: {
-		asar: true
+		asar: true,
+		icon: './assets/icons/app-icon'
 	},
 	rebuildConfig: {},
-	makers: [new MakerSquirrel({}), new MakerZIP({}, ['darwin']), new MakerRpm({}), new MakerDeb({})],
+	makers: [
+		new MakerSquirrel({
+			setupIcon: './assets/icons/installer-icon.ico'
+		}),
+		new MakerZIP({}),
+		new MakerDMG({
+			icon: './assets/icons/installer-icon.icns'
+		}),
+		new MakerRpm({
+			options: {
+				icon: './assets/icons/installer-icon-512.png'
+			}
+		}),
+		new MakerDeb({
+			options: {
+				icon: './assets/icons/installer-icon-512.png'
+			}
+		})
+	],
 	plugins: [
 		new VitePlugin({
 			// `build` can specify multiple entry builds, which can be Main process, Preload scripts, Worker process, etc.
@@ -47,7 +69,9 @@ const config: ForgeConfig = {
 			[FuseV1Options.EnableNodeCliInspectArguments]: false,
 			[FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
 			[FuseV1Options.OnlyLoadAppFromAsar]: true
-		})
+		}),
+		new AutoUnpackNativesPlugin({}),
+		new ElectronegativityPlugin({})
 	],
 	publishers: [
 		{
