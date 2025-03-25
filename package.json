@@ -8,7 +8,7 @@
 	"author": "Daniel Kerrigan",
 	"description": "ECA-PRO visualization tool",
 	"scripts": {
-		"clean": "rimraf ./.vite && rimraf out && rimraf ./node_modules/.tmp/tsconfig.node.tsbuildinfo && rimraf \"$HOME/Library/Application Support/ECA-PRO/settings.json\"",
+		"clean": "rimraf ./.vite && rimraf out && rimraf ./node_modules/.tmp/tsconfig.node.tsbuildinfo && rimraf \"$HOME/Library/Application Support/ECA-PRO/settings.json\" && rimraf \"%AppData%\\ECA-PRO\\settings.json\"",
 		"check": "svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json",
 		"format": "prettier --write .",
 		"test": "vitest",

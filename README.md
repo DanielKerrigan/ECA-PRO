@@ -8,7 +8,7 @@ You can download the most recent version of the app from the [releases](https://
 
 ### Windows
 
-`ECA-PRO-X.Y.Z.Setup.exe` is the installation executable for version X.Y.Z. Downloading and running this file will install the ECA-PRO app. Note that this app is not code signed, so when you try to run the setup executable, Windows will likely warn you about it. To run the installer, you can click "More info" and then "Run anyway". This will install `ECA-PRO.exe` and create shortcuts. On my computer, the app is installed to `C:\Users\Dan\AppData\Local\eca_pro`.
+`ECA-PRO-X.Y.Z.Setup.exe` is the installation executable for version X.Y.Z. Downloading and running this file will install the ECA-PRO app. Note that this app is not code signed, so when you try to run the setup executable, Windows will likely warn you about it. To run the installer, you can click "More info" and then "Run anyway". This will install `ECA-PRO.exe` and create shortcuts. On my computer, the app is installed to `%LocalAppData%\eca_pro`.
 
 Alternatively, if you do not want to use the installer, `ECA-PRO-win32-x64-X.Y.Z.zip` contains the app's executable and dependencies for version X.Y.Z. After downloading and unzipping the file, you will find the `ECA-PRO.exe` application. If you try to run this, Windows will prompt you to first extract all files in the folder. After doing that, you can then run ECA-PRO. This app is not code signed, so Windows will likely warn you about this. You can click "More info" and then "Run anyway" to run the app.
 
