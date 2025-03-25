@@ -9,6 +9,7 @@ import { AutoUnpackNativesPlugin } from '@electron-forge/plugin-auto-unpack-nati
 import { ElectronegativityPlugin } from '@electron-forge/plugin-electronegativity';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
+import { PublisherGithub } from '@electron-forge/publisher-github';
 
 const config: ForgeConfig = {
 	packagerConfig: {
@@ -74,15 +75,14 @@ const config: ForgeConfig = {
 		new ElectronegativityPlugin({})
 	],
 	publishers: [
-		{
-			name: '@electron-forge/publisher-github',
-			config: {
-				repository: {
-					owner: 'DanielKerrigan',
-					name: 'ECA-PRO'
-				}
-			}
-		}
+		new PublisherGithub({
+			repository: {
+				owner: 'DanielKerrigan',
+				name: 'ECA-PRO'
+			},
+			draft: true,
+			prerelease: false
+		})
 	]
 };
 
