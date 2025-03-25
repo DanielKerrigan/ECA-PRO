@@ -36,15 +36,9 @@
 	} = $props();
 
 	const itemIDs = $derived(Array.from(proItemToResponses.keys()));
-	let filteredItemIDs: number[] = $state([]);
+	let filteredItemIDs: number[] = $derived($state.snapshot(itemIDs));
 	let sortingKey: PROConstructOrderKey = $state('category');
 	let constructsOrder = $derived(proPatientConstructs[sortingKey]);
-
-	// TODO: Is there a way to do this without using $effect?
-	$effect(() => {
-		filteredItemIDs = itemIDs;
-		sortingKey = 'category';
-	});
 
 	const proMetaByConstruct = $derived(getPROMetaByConstruct(proMetaByID, filteredItemIDs));
 

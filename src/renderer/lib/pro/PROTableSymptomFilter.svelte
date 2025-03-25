@@ -20,14 +20,9 @@
 		onFilterItems: (itemsIDs: number[]) => void;
 	} = $props();
 
-	const checks: CategoryChecks = new CategoryChecks();
+	const checks: CategoryChecks = $derived(new CategoryChecks(proMetaByID, itemIDs));
 
 	let searchValue = $state('');
-
-	// TODO: Is there a way to do this without using $effect?
-	$effect(() => {
-		checks.reset(proMetaByID, itemIDs);
-	});
 
 	function onSearchChanged(value: string) {
 		searchValue = value;

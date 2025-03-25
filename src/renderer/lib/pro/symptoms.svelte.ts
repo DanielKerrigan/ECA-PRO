@@ -86,7 +86,7 @@ export class CategoryCheck {
 export class CategoryChecks {
 	categories: CategoryCheck[] = $state([]);
 
-	reset(proMetaByID: PROMetaByID, itemIDs: number[]) {
+	constructor(proMetaByID: PROMetaByID, itemIDs: number[]) {
 		const proMetaByCategoryConstruct = getPROMetaByCategoryAndConstruct(proMetaByID, itemIDs);
 		this.categories = proMetaByCategoryConstruct.map(([categoryName, constructAndItems]) => {
 			const constructs = constructAndItems.map(

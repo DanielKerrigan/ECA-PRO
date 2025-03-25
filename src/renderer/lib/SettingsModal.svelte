@@ -16,12 +16,7 @@
 		onUpdateSettings: (newSettings: Settings) => void;
 	} = $props();
 
-	let newSettings: Settings = $state($state.snapshot(settings));
-
-	// TODO: is there a way to do this without $effect?
-	$effect(() => {
-		newSettings = $state.snapshot(settings);
-	});
+	let newSettings: Settings = $derived($state.snapshot(settings));
 
 	function onSelectFile(onfulfilled: (path: string) => void) {
 		window.api.selectFilePath().then(onfulfilled);
