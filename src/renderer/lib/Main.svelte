@@ -1,16 +1,23 @@
 <script lang="ts">
-	import type { Data, PROItemToResponses, PROUserConstructOrders } from '../../shared/api';
+	import type {
+		Data,
+		PROKeyToResponses,
+		PROUserConstructOrders,
+		RadiationTreatment
+	} from '../../shared/api';
 	import Header from './Header.svelte';
 	import type { AggregationLevel } from './pro/aggregation';
 	import PROTable from './pro/PROTable.svelte';
 	import { ascending, max, min } from 'd3-array';
 	import { timeDay, timeMonth } from 'd3-time';
+	import TreatmentsTable from './treatments/TreatmentsTable.svelte';
 
 	let { data }: { data: Data } = $props();
 
 	let patientID: number | undefined = $state();
-	let patientResponses: PROItemToResponses | undefined = $state();
+	let patientResponses: PROKeyToResponses | undefined = $state();
 	let proPatientConstructs: PROUserConstructOrders | undefined = $state();
+	let radiationTreatment: RadiationTreatment | undefined = $state();
 	let minDate: Date | undefined = $state();
 	let maxDate: Date | undefined = $state();
 	let startDate: Date | undefined = $state();
@@ -24,6 +31,7 @@
 		patientID = newPatientID;
 		patientResponses = data.proUsersResponses.get(patientID);
 		proPatientConstructs = data.proUsersConstructOrders.get(patientID);
+		radiationTreatment = data.radiationTreatmentByUser.get(patientID);
 
 		if (patientResponses === undefined) {
 			minDate = undefined;
@@ -63,29 +71,38 @@
 </script>
 
 <div class="flex h-full w-full flex-col gap-4">
-	<Header
-		{patientIDs}
-		{patientID}
-		{startDate}
-		{endDate}
-		{minDate}
-		{maxDate}
-		{aggregationLevel}
-		{normalizeBars}
-		{onChangePatient}
-		{onChangeDates}
-		{onChangeAggregationLevel}
-		{onChangeNormalizeBars}
-	/>
-	{#if patientResponses && proPatientConstructs && startDate && endDate}
-		<PROTable
-			proItemToResponses={patientResponses}
-			proMetaByID={data.proMetaByID}
-			{proPatientConstructs}
+	<div class="flex-none">
+		<Header
+			{patientIDs}
+			{patientID}
 			{startDate}
 			{endDate}
+			{minDate}
+			{maxDate}
 			{aggregationLevel}
 			{normalizeBars}
+			{onChangePatient}
+			{onChangeDates}
+			{onChangeAggregationLevel}
+			{onChangeNormalizeBars}
 		/>
+	</div>
+	{#if radiationTreatment && startDate && endDate}
+		<div class="min-h-0 flex-none">
+			<TreatmentsTable {radiationTreatment} {startDate} {endDate} {aggregationLevel} />
+		</div>
+	{/if}
+	{#if patientResponses && proPatientConstructs && startDate && endDate}
+		<div class="min-h-0 flex-1">
+			<PROTable
+				proKeyToResponses={patientResponses}
+				proMetaByKey={data.proMetaByKey}
+				{proPatientConstructs}
+				{startDate}
+				{endDate}
+				{aggregationLevel}
+				{normalizeBars}
+			/>
+		</div>
 	{/if}
 </div>

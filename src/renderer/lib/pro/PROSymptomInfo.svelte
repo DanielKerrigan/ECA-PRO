@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type { PROItem } from '../../../shared/api';
+	import type { MergedPROItem } from '../../../shared/api';
 	import PROLegend from './PROLegend.svelte';
 
-	let { item }: { item: PROItem } = $props();
+	let { item }: { item: MergedPROItem } = $props();
 </script>
 
 <div>

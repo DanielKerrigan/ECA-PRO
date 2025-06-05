@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as Popover from '$lib/components/ui/popover/index.js';
-	import type { PROMetaByID } from '../../../shared/api';
+	import type { PROMetaByKey } from '../../../shared/api';
 	import { cn } from '../utils';
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
@@ -11,16 +11,16 @@
 	import Filter from 'lucide-svelte/icons/filter';
 
 	let {
-		proMetaByID,
-		itemIDs,
+		proMetaByKey,
+		keys,
 		onFilterItems
 	}: {
-		proMetaByID: PROMetaByID;
-		itemIDs: number[];
-		onFilterItems: (itemsIDs: number[]) => void;
+		proMetaByKey: PROMetaByKey;
+		keys: string[];
+		onFilterItems: (keys: string[]) => void;
 	} = $props();
 
-	const checks: CategoryChecks = $derived(new CategoryChecks(proMetaByID, itemIDs));
+	const checks: CategoryChecks = $derived(new CategoryChecks(proMetaByKey, keys));
 
 	let searchValue = $state('');
 
@@ -30,7 +30,7 @@
 	}
 
 	function onCheckedChange() {
-		onFilterItems(checks.getCheckedItemIDs());
+		onFilterItems(checks.getCheckedKeys());
 	}
 
 	function onSetAll(checked: boolean) {

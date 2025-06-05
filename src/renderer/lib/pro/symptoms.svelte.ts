@@ -1,40 +1,37 @@
-import { groups, InternMap, rollup } from 'd3-array';
-import type { PROMetaByID, PROItem } from '../../../shared/api';
+import { ascending, groups, InternMap, rollup, rollups } from 'd3-array';
+import type { PROMetaByKey, MergedPROItem } from '../../../shared/api';
 
 // grouping
 
-export type PROMetaByConstruct = InternMap<string, PROItem[]>;
+export type PROMetaByConstruct = InternMap<string, MergedPROItem[]>;
 
 export function getPROMetaByConstruct(
-	proMetaByID: PROMetaByID,
-	itemIDs: number[]
+	proMetaByKey: PROMetaByKey,
+	keys: string[]
 ): PROMetaByConstruct {
-	const items = itemIDs
-		.map((itemID: number) => proMetaByID.get(itemID))
-		.filter((d) => d !== undefined);
+	const items = keys.map((key: string) => proMetaByKey.get(key)).filter((d) => d !== undefined);
 
 	return rollup(
 		items,
-		(g) => g.toSorted((a, b) => a.index - b.index),
+		(g) => g.toSorted((a, b) => ascending(a.responseItemType, b.responseItemType)),
 		(d) => d.constructName
 	);
 }
 
-export type PROMetaByCategoryAndConstruct = [string, [string, PROItem[]][]][];
+export type PROMetaByCategoryAndConstruct = [string, [string, MergedPROItem[]][]][];
 
 export function getPROMetaByCategoryAndConstruct(
-	proMetaByID: PROMetaByID,
-	itemIDs: number[]
+	proMetaByKey: PROMetaByKey,
+	keys: string[]
 ): PROMetaByCategoryAndConstruct {
-	const items = itemIDs
-		.map((itemID: number) => proMetaByID.get(itemID))
-		.filter((d) => d !== undefined);
+	const items = keys.map((key: string) => proMetaByKey.get(key)).filter((d) => d !== undefined);
 
-	return groups(
+	return rollups(
 		items,
+		(g) => g.toSorted((a, b) => ascending(a.constructName, b.constructName)),
 		(d) => d.categoryName,
 		(d) => d.constructName
-	);
+	).toSorted((a, b) => ascending(a[0], b[0]));
 }
 
 // filtering
@@ -43,11 +40,11 @@ export class ConstructCheck {
 	name = $state('');
 	checked = $state(true);
 	show = $state(true);
-	itemIDs: number[] = $state([]);
+	keys: string[] = $state([]);
 
-	constructor(name: string, itemIDs: number[]) {
+	constructor(name: string, keys: string[]) {
 		this.name = name;
-		this.itemIDs = itemIDs;
+		this.keys = keys;
 	}
 }
 
@@ -86,14 +83,14 @@ export class CategoryCheck {
 export class CategoryChecks {
 	categories: CategoryCheck[] = $state([]);
 
-	constructor(proMetaByID: PROMetaByID, itemIDs: number[]) {
-		const proMetaByCategoryConstruct = getPROMetaByCategoryAndConstruct(proMetaByID, itemIDs);
+	constructor(proMetaByID: PROMetaByKey, keys: string[]) {
+		const proMetaByCategoryConstruct = getPROMetaByCategoryAndConstruct(proMetaByID, keys);
 		this.categories = proMetaByCategoryConstruct.map(([categoryName, constructAndItems]) => {
 			const constructs = constructAndItems.map(
 				([constructName, items]) =>
 					new ConstructCheck(
 						constructName,
-						items.map((d) => d.itemID)
+						items.map((d) => d.key)
 					)
 			);
 
@@ -101,12 +98,12 @@ export class CategoryChecks {
 		});
 	}
 
-	getCheckedItemIDs(): number[] {
+	getCheckedKeys(): string[] {
 		return this.categories
 			.map((category) =>
 				category.constructs
 					.filter((construct) => construct.checked)
-					.map((construct) => construct.itemIDs)
+					.map((construct) => construct.keys)
 			)
 			.flat(2);
 	}

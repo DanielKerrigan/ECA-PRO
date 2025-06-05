@@ -1,10 +1,10 @@
-import type { PROMetaByID, PROItem } from '../../shared/api.js';
+import type { PROItem, PROMetaByKey } from '../../shared/api.js';
 
 import * as d3 from 'd3';
 
 export function getPROItems(metaContents: string): PROItem[] {
 	return d3
-		.csvParse(metaContents, (d, index) => {
+		.csvParse(metaContents, (d) => {
 			const responseItemStrings = d.ResponseItemValues.split('|').map((s) => s.trim());
 			const numResponses = responseItemStrings.length;
 
@@ -20,7 +20,7 @@ export function getPROItems(metaContents: string): PROItem[] {
 			];
 
 			return {
-				index,
+				key: d.ConstructName + d.ResponseItemType,
 				itemID: +d.ItemID,
 				item: d.Item,
 				constructName: d.ConstructName,
@@ -35,6 +35,32 @@ export function getPROItems(metaContents: string): PROItem[] {
 		.filter((d) => d.item !== '');
 }
 
-export function groupPROItems(proItems: PROItem[]): PROMetaByID {
-	return d3.index(proItems, (d) => d.itemID);
+export function getPROItemIDToKey(proItems: PROItem[]): Map<number, string> {
+	return new Map(proItems.map((d) => [d.itemID, d.key]));
+}
+
+export function mergePROItems(proItems: PROItem[]): PROMetaByKey {
+	return d3.rollup(
+		proItems,
+		(g) => {
+			const itemIDs = g.map((d) => d.itemID);
+			const items = g.map((d) => d.key);
+
+			const first = g[0];
+
+			return {
+				key: first.key,
+				itemIDs,
+				items,
+				constructName: first.constructName,
+				responseItemType: first.responseItemType,
+				responseItemStrings: first.responseItemStrings,
+				responseItemValues: first.responseItemValues,
+				normalizedResponseItemValues: first.normalizedResponseItemValues,
+				bankName: first.bankName,
+				categoryName: first.categoryName
+			};
+		},
+		(d) => d.key
+	);
 }

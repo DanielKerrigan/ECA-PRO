@@ -4,34 +4,55 @@ import type {
 	PROResponse,
 	PROUsersConstructOrders,
 	PROItem,
-	Settings
+	Settings,
+	RadiationTreatment
 } from '../shared/api.js';
 
 import * as fs from 'node:fs/promises';
-import { getPROItems, groupPROItems } from './pro/proMeta.js';
+import { getPROItems, mergePROItems, getPROItemIDToKey } from './pro/proMeta.js';
 import { getPROResponses, groupPROResponses } from './pro/proResponses.js';
 import { getUsersConstructOrders } from './pro/proSymptomSorting.js';
+import { getRadiationTreatments } from './symptoms/radiation.js';
+import { stripBom } from './utils.js';
 
 export function getData(settings: Settings): Promise<Data> {
-	const metaPromise = fs.readFile(settings.proMetaPath, 'utf8');
-	const dataPromise = fs.readFile(settings.proDataPath, 'utf8');
+	const promises = [
+		fs.readFile(settings.proMetaPath, 'utf8'),
+		fs.readFile(settings.proDataPath, 'utf8'),
+		fs.readFile(settings.radiationPath, 'utf8'),
+		fs.readFile(settings.systemicTherapyPath, 'utf8'),
+		fs.readFile(settings.oralPath, 'utf8')
+	];
 
-	return Promise.all([metaPromise, dataPromise]).then(([metaContents, dataContents]) => {
-		const proItems: PROItem[] = getPROItems(metaContents);
-		const proMetaByID = groupPROItems(proItems);
+	return Promise.allSettled(promises).then((values) => {
+		const [proMetaValue, proDataValue, radiationValue, systemicTherapyPath, oralValue] = values;
 
-		const allProReponses: PROResponse[] = getPROResponses(dataContents, proMetaByID);
+		const proItems: PROItem[] =
+			proMetaValue.status === 'fulfilled' ? getPROItems(stripBom(proMetaValue.value)) : [];
+		const proMetaByKey = mergePROItems(proItems);
+		const proItemIDToKey = getPROItemIDToKey(proItems);
+
+		const allProReponses: PROResponse[] =
+			proDataValue.status === 'fulfilled'
+				? getPROResponses(stripBom(proDataValue.value), proMetaByKey, proItemIDToKey)
+				: [];
 		const proUsersResponses: PROUsersResponses = groupPROResponses(allProReponses);
 
 		const proUsersConstructOrders: PROUsersConstructOrders = getUsersConstructOrders(
-			proMetaByID,
+			proMetaByKey,
 			allProReponses
 		);
 
+		const radiationTreatmentByUser =
+			radiationValue.status === 'fulfilled'
+				? getRadiationTreatments(stripBom(radiationValue.value))
+				: new Map<number, RadiationTreatment>();
+
 		return {
-			proMetaByID,
+			proMetaByKey,
 			proUsersResponses,
-			proUsersConstructOrders
+			proUsersConstructOrders,
+			radiationTreatmentByUser
 		};
 	});
 }

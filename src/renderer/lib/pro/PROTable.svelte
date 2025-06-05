@@ -1,16 +1,16 @@
 <script lang="ts">
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import type {
-		PROMetaByID,
-		PROItemToResponses,
+		PROKeyToResponses,
 		PROUserConstructOrders,
-		PROConstructOrderKey
+		PROConstructOrderMethod,
+		PROMetaByKey
 	} from '../../../shared/api';
 	import PROTimeline from './PROTimeline.svelte';
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
 	import { cn } from '../utils';
 	import PROTableSymptomFilter from './PROTableSymptomFilter.svelte';
-	import PROTableSymptomSorting from './PROTableSymptomSorting.svelte';
+	import PROTableSymptomOrdering from './PROTableSymptomOrdering.svelte';
 	import PROTimelineStackedBars from './PROTimelineStackedBars.svelte';
 	import type { AggregationLevel } from './aggregation';
 	import { getPROMetaByConstruct } from './symptoms.svelte';
@@ -18,16 +18,16 @@
 	import Info from 'lucide-svelte/icons/info';
 
 	let {
-		proMetaByID,
-		proItemToResponses,
+		proMetaByKey,
+		proKeyToResponses,
 		proPatientConstructs,
 		startDate,
 		endDate,
 		aggregationLevel,
 		normalizeBars
 	}: {
-		proMetaByID: PROMetaByID;
-		proItemToResponses: PROItemToResponses;
+		proMetaByKey: PROMetaByKey;
+		proKeyToResponses: PROKeyToResponses;
 		proPatientConstructs: PROUserConstructOrders;
 		startDate: Date;
 		endDate: Date;
@@ -35,12 +35,12 @@
 		normalizeBars: boolean;
 	} = $props();
 
-	const itemIDs = $derived(Array.from(proItemToResponses.keys()));
-	let filteredItemIDs: number[] = $derived($state.snapshot(itemIDs));
-	let sortingKey: PROConstructOrderKey = $state('category');
-	let constructsOrder = $derived(proPatientConstructs[sortingKey]);
+	const keys = $derived(Array.from(proKeyToResponses.keys()));
+	let filteredKeys: string[] = $derived($state.snapshot(keys));
+	let orderMethod: PROConstructOrderMethod = $state('category');
+	let constructsOrder = $derived(proPatientConstructs[orderMethod]);
 
-	const proMetaByConstruct = $derived(getPROMetaByConstruct(proMetaByID, filteredItemIDs));
+	const proMetaByConstruct = $derived(getPROMetaByConstruct(proMetaByKey, filteredKeys));
 
 	let visWidth = $state(0);
 </script>
@@ -52,18 +52,18 @@
 		<div class="font-semibold">Symptom</div>
 
 		<PROTableSymptomFilter
-			{proMetaByID}
-			itemIDs={Array.from(proItemToResponses.keys())}
-			onFilterItems={(ids) => {
-				filteredItemIDs = ids;
+			{proMetaByKey}
+			keys={Array.from(proKeyToResponses.keys())}
+			onFilterItems={(keys) => {
+				filteredKeys = keys;
 			}}
 		/>
 
-		<PROTableSymptomSorting
-			{sortingKey}
+		<PROTableSymptomOrdering
+			{orderMethod}
 			proUserConstructOrders={proPatientConstructs}
-			onChangeSortingKey={(key) => {
-				sortingKey = key;
+			onChangeOrderMethod={(method) => {
+				orderMethod = method;
 			}}
 		/>
 	</div>
@@ -104,7 +104,7 @@
 					{#if aggregationLevel === 'none'}
 						<PROTimeline
 							{item}
-							responses={proItemToResponses.get(item.itemID) ?? []}
+							responses={proKeyToResponses.get(item.key) ?? []}
 							width={visWidth}
 							{startDate}
 							{endDate}
@@ -113,7 +113,7 @@
 						<PROTimelineStackedBars
 							{item}
 							{aggregationLevel}
-							responses={proItemToResponses.get(item.itemID) ?? []}
+							responses={proKeyToResponses.get(item.key) ?? []}
 							{normalizeBars}
 							width={visWidth}
 							{startDate}

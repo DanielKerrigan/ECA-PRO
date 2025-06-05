@@ -1,17 +1,21 @@
 import type { InternMap } from 'd3';
 
+// Settings
+
 export type Settings = {
 	proMetaPath: string;
 	proDataPath: string;
 	radiationPath: string;
-	injectionPath: string;
+	systemicTherapyPath: string;
 	oralPath: string;
 };
+
+// PRO
 
 // Meta
 
 export type PROItem = {
-	index: number;
+	key: string;
 	itemID: number;
 	item: string;
 	constructName: string;
@@ -23,25 +27,31 @@ export type PROItem = {
 	categoryName: string;
 };
 
-export type PROMetaByID = InternMap<number, PROItem>;
+export type MergedPROItem = Omit<PROItem, 'itemID' | 'item'> & {
+	itemIDs: number[];
+	items: string[];
+};
+
+export type PROMetaByKey = InternMap<string, MergedPROItem>;
 
 // Responses
 
 export type PROResponse = {
 	userID: number;
 	dateTime: Date;
+	key: string;
 	itemID: number;
 	responseValue: number;
 	normalizedResponseValue: number;
 	responseText: string;
 };
 
-export type PROUsersResponses = InternMap<number, PROItemToResponses>;
-export type PROItemToResponses = InternMap<number, PROResponse[]>;
+export type PROKeyToResponses = InternMap<string, PROResponse[]>;
+export type PROUsersResponses = InternMap<number, PROKeyToResponses>;
 
 // Constructs
 
-export type PROConstructOrderKey = 'category' | 'severity';
+export type PROConstructOrderMethod = 'category' | 'severity';
 
 export type PROUserConstructOrders = {
 	category: {
@@ -56,13 +66,34 @@ export type PROUserConstructOrders = {
 
 export type PROUsersConstructOrders = InternMap<number, PROUserConstructOrders>;
 
-export type Data = {
-	proMetaByID: PROMetaByID;
-	proUsersResponses: PROUsersResponses;
-	proUsersConstructOrders: PROUsersConstructOrders;
+// Treatments
+
+export type RadiationEvent = {
+	date: Date;
+	site: string;
+	dose: number | null;
+	fractions: number | null;
 };
 
+export type RadiationTreatment = {
+	totalDoseInitiallyPlanned: number | null;
+	totalFractionsPlanned: number | null;
+	changeInPlan: string;
+	newTotalDosePlanned: number | null;
+	newTotalFractionsPlanned: number | null;
+	events: RadiationEvent[];
+};
+
+export type RadiationTreatmentByUser = InternMap<number, RadiationTreatment>;
+
 // preload API
+
+export type Data = {
+	proMetaByKey: PROMetaByKey;
+	proUsersResponses: PROUsersResponses;
+	proUsersConstructOrders: PROUsersConstructOrders;
+	radiationTreatmentByUser: RadiationTreatmentByUser;
+};
 
 export type ElectronAPI = {
 	getSettings: () => Promise<Settings>;

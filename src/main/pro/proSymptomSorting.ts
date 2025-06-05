@@ -1,5 +1,6 @@
 import type {
-	PROMetaByID,
+	MergedPROItem,
+	PROMetaByKey,
 	PROResponse,
 	PROUserConstructOrders,
 	PROUsersConstructOrders
@@ -20,22 +21,22 @@ function compareRecentSeverity(
 }
 
 type ConstructInfo = {
-	index: number;
+	categoryName: string;
+	constructName: string;
 	meanNormalizedValue: number;
 	numResponses: number;
 };
 
 function getConstructInfo(
 	constructResponses: PROResponse[],
-	proMetaByID: PROMetaByID,
+	proMetaByKey: PROMetaByKey,
 	recentStart: Date,
 	recentEnd: Date
 ): ConstructInfo {
-	const index =
-		d3.min(constructResponses, (d) => {
-			const item = proMetaByID.get(d.itemID);
-			return item?.index;
-		}) ?? Infinity;
+	const key = constructResponses[0].key;
+	const item = proMetaByKey.get(key);
+	const categoryName = item?.categoryName ?? '';
+	const constructName = item?.constructName ?? '';
 
 	const recentResponses = constructResponses.filter(
 		(d) => d.dateTime >= recentStart && d.dateTime <= recentEnd
@@ -43,7 +44,8 @@ function getConstructInfo(
 
 	if (recentResponses.length === 0) {
 		return {
-			index,
+			categoryName,
+			constructName,
 			meanNormalizedValue: 0,
 			numResponses: 0
 		};
@@ -69,7 +71,8 @@ function getConstructInfo(
 		.sort(compareRecentSeverity)[0];
 
 	return {
-		index,
+		categoryName,
+		constructName,
 		meanNormalizedValue,
 		numResponses
 	};
@@ -77,7 +80,7 @@ function getConstructInfo(
 
 function getUserConstructOrders(
 	allUserResponses: PROResponse[],
-	proMetaByID: PROMetaByID
+	proMetaByKey: PROMetaByKey
 ): PROUserConstructOrders {
 	// TODO: better handle dates being undefined
 	const [minDate, maxDate] = d3.extent(allUserResponses, (d) => d.dateTime) as [Date, Date];
@@ -87,16 +90,20 @@ function getUserConstructOrders(
 	const constructs = d3.rollups(
 		allUserResponses,
 		(constructResponses) =>
-			getConstructInfo(constructResponses, proMetaByID, recentStart, recentEnd),
+			getConstructInfo(constructResponses, proMetaByKey, recentStart, recentEnd),
 		(d) => {
-			const item = proMetaByID.get(d.itemID);
+			const item = proMetaByKey.get(d.key);
 			return item?.constructName;
 		}
 	);
 
-	const constructsSortedByIndex = constructs
+	const constructsSortedByCategory = constructs
 		.slice()
-		.sort((a, b) => d3.ascending(a[1].index, b[1].index));
+		.sort(
+			(a, b) =>
+				d3.ascending(a[1].categoryName, b[1].categoryName) ||
+				d3.ascending(a[1].constructName, b[1].constructName)
+		);
 
 	const constructsSortedBySeverity = constructs
 		.slice()
@@ -104,7 +111,7 @@ function getUserConstructOrders(
 
 	return {
 		category: {
-			order: constructsSortedByIndex.map((d) => d[0]).filter((d) => d !== undefined)
+			order: constructsSortedByCategory.map((d) => d[0]).filter((d) => d !== undefined)
 		},
 		severity: {
 			startDate: recentStart,
@@ -114,13 +121,17 @@ function getUserConstructOrders(
 	};
 }
 
+/**
+ * Get the order that the constructs (symptoms) should show up in the PRO table
+ * for each user.
+ */
 export function getUsersConstructOrders(
-	proMetaByID: PROMetaByID,
+	proMetaByKey: PROMetaByKey,
 	allProReponses: PROResponse[]
 ): PROUsersConstructOrders {
 	return d3.rollup(
 		allProReponses,
-		(allUserResponses) => getUserConstructOrders(allUserResponses, proMetaByID),
+		(allUserResponses) => getUserConstructOrders(allUserResponses, proMetaByKey),
 		(d) => d.userID
 	);
 }

@@ -37,7 +37,7 @@
 	const triggerContent = $derived(patientID ?? 'Select a patient');
 </script>
 
-<div class="flex flex-none items-center gap-8">
+<div class="flex items-center gap-8">
 	<div class="flex flex-none items-center gap-2">
 		<Label for="patient-select" class="text-base">Patient</Label>
 		<Select.Root

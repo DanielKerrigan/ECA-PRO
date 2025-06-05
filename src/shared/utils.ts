@@ -11,3 +11,11 @@ export function max<T>(a: T, b: T): T {
 	}
 	return b;
 }
+
+export function parseNumber(x: string): number | null {
+	if (x === '') {
+		return null;
+	}
+
+	return +x;
+}

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { PROResponse, PROItem } from '../../../shared/api';
+	import type { PROResponse, PROItem, MergedPROItem } from '../../../shared/api';
 	import { max } from 'd3-array';
 	import { scaleTime, scaleLinear } from 'd3-scale';
 	import type { ScaleTime, ScaleLinear } from 'd3-scale';
@@ -27,7 +27,7 @@
 		marginBottom = 24
 	}: {
 		responses: PROResponse[];
-		item: PROItem;
+		item: MergedPROItem;
 		aggregationLevel: string;
 		startDate: Date;
 		endDate: Date;
@@ -45,7 +45,7 @@
 	let canvas: HTMLCanvasElement | null = $state(null);
 	let ctx: CanvasRenderingContext2D | null = $derived(
 		canvas
-			? (canvas as HTMLCanvasElement)?.getContext('2d', {
+			? (canvas as HTMLCanvasElement).getContext('2d', {
 					alpha: false
 				})
 			: null

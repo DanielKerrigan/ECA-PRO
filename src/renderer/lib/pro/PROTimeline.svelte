@@ -1,8 +1,7 @@
 <script lang="ts">
-	import type { PROResponse, PROItem } from '../../../shared/api';
+	import type { PROResponse, MergedPROItem } from '../../../shared/api';
 	import { scaleTime, scaleLinear } from 'd3-scale';
 	import type { ScaleTime, ScaleLinear } from 'd3-scale';
-	import { interpolateOrRd } from 'd3-scale-chromatic';
 	import { getPROColor, scaleCanvas } from '$lib/vis-utils';
 	import { axis } from '$lib/components/vis/axis/axis';
 	import { timeDay } from 'd3-time';
@@ -20,7 +19,7 @@
 		marginBottom = 24
 	}: {
 		responses: PROResponse[];
-		item: PROItem;
+		item: MergedPROItem;
 		startDate: Date;
 		endDate: Date;
 		width: number;
@@ -36,7 +35,7 @@
 	let canvas: HTMLCanvasElement | null = $state(null);
 	let ctx: CanvasRenderingContext2D | null = $derived(
 		canvas
-			? (canvas as HTMLCanvasElement)?.getContext('2d', {
+			? (canvas as HTMLCanvasElement).getContext('2d', {
 					alpha: false
 				})
 			: null
@@ -60,7 +59,7 @@
 		)
 	);
 
-	function getBarWidth(startDate: Date, endDate: Date, x: ScaleTime<number, number>) {
+	function getBarWidth(startDate: Date, endDate: Date, x: ScaleTime<number, number>): number {
 		const minWidth = 1;
 		const maxWidth = 20;
 

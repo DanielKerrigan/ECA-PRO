@@ -158,9 +158,6 @@ async function applyBaseRendererConfig(env: ForgedConfigEnv<'renderer'>, config:
 		forgeConfigSelf: { name }
 	} = env;
 
-	console.log('here');
-	console.log(env);
-
 	const mergedConfig = mergeConfig(
 		{
 			root,

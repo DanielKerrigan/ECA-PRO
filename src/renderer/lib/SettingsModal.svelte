@@ -26,7 +26,7 @@
 		{ label: 'PRO Meta', key: 'proMetaPath' },
 		{ label: 'PRO Data', key: 'proDataPath' },
 		{ label: 'Radiation Treatment', key: 'radiationPath' },
-		{ label: 'Injection Treatment', key: 'injectionPath' },
+		{ label: 'Systemic Therapy Treatment', key: 'systemicTherapyPath' },
 		{ label: 'Oral Treatment', key: 'oralPath' }
 	];
 
