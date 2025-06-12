@@ -68,23 +68,25 @@ export type PROUsersConstructOrders = InternMap<number, PROUserConstructOrders>;
 
 // Treatments
 
-export type RadiationEvent = {
+export type TreatmentEvent = {
+	userID: number;
+	treatment: string;
+	detail: string;
 	date: Date;
-	site: string;
-	dose: number | null;
-	fractions: number | null;
+	complete: boolean;
+	extras: Record<string, string>;
 };
 
-export type RadiationTreatment = {
-	totalDoseInitiallyPlanned: number | null;
-	totalFractionsPlanned: number | null;
-	changeInPlan: string;
-	newTotalDosePlanned: number | null;
-	newTotalFractionsPlanned: number | null;
-	events: RadiationEvent[];
+export type OralTreatmentEvent = {
+	userID: number;
+	treatment: string;
+	detail: string;
+	startDate: Date;
+	stopDate: Date | null;
 };
 
-export type RadiationTreatmentByUser = InternMap<number, RadiationTreatment>;
+export type TreatmentEventsByUser = InternMap<number, TreatmentEvent[]>;
+export type OralTreatmentEventsByUser = InternMap<number, OralTreatmentEvent[]>;
 
 // preload API
 
@@ -92,7 +94,9 @@ export type Data = {
 	proMetaByKey: PROMetaByKey;
 	proUsersResponses: PROUsersResponses;
 	proUsersConstructOrders: PROUsersConstructOrders;
-	radiationTreatmentByUser: RadiationTreatmentByUser;
+	radiationTreatmentByUser: TreatmentEventsByUser;
+	systemicTherapyTreatmentByUser: TreatmentEventsByUser;
+	oralTreatmentByUser: OralTreatmentEventsByUser;
 };
 
 export type ElectronAPI = {

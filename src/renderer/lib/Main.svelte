@@ -1,9 +1,10 @@
 <script lang="ts">
 	import type {
 		Data,
+		OralTreatmentEvent,
 		PROKeyToResponses,
 		PROUserConstructOrders,
-		RadiationTreatment
+		TreatmentEvent
 	} from '../../shared/api';
 	import Header from './Header.svelte';
 	import type { AggregationLevel } from './pro/aggregation';
@@ -17,7 +18,9 @@
 	let patientID: number | undefined = $state();
 	let patientResponses: PROKeyToResponses | undefined = $state();
 	let proPatientConstructs: PROUserConstructOrders | undefined = $state();
-	let radiationTreatment: RadiationTreatment | undefined = $state();
+	let radiationTreatment: TreatmentEvent[] | undefined = $state();
+	let systemicTherapyTreatment: TreatmentEvent[] | undefined = $state();
+	let oralTreatment: OralTreatmentEvent[] | undefined = $state();
 	let minDate: Date | undefined = $state();
 	let maxDate: Date | undefined = $state();
 	let startDate: Date | undefined = $state();
@@ -32,6 +35,8 @@
 		patientResponses = data.proUsersResponses.get(patientID);
 		proPatientConstructs = data.proUsersConstructOrders.get(patientID);
 		radiationTreatment = data.radiationTreatmentByUser.get(patientID);
+		systemicTherapyTreatment = data.systemicTherapyTreatmentByUser.get(patientID);
+		oralTreatment = data.oralTreatmentByUser.get(patientID);
 
 		if (patientResponses === undefined) {
 			minDate = undefined;
@@ -87,9 +92,16 @@
 			{onChangeNormalizeBars}
 		/>
 	</div>
-	{#if radiationTreatment && startDate && endDate}
+	{#if radiationTreatment && systemicTherapyTreatment && oralTreatment && startDate && endDate}
 		<div class="min-h-0 flex-none">
-			<TreatmentsTable {radiationTreatment} {startDate} {endDate} {aggregationLevel} />
+			<TreatmentsTable
+				{radiationTreatment}
+				{systemicTherapyTreatment}
+				{oralTreatment}
+				{startDate}
+				{endDate}
+				{aggregationLevel}
+			/>
 		</div>
 	{/if}
 	{#if patientResponses && proPatientConstructs && startDate && endDate}

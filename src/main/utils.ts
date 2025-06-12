@@ -1,3 +1,7 @@
+import * as d3 from 'd3';
+
+export const parseDate = d3.timeParse('%Y-%m-%d');
+
 // from https://github.com/sindresorhus/strip-bom
 // see https://d3js.org/d3-dsv#byte-order-marks for more info
 export function stripBom(str: string): string {

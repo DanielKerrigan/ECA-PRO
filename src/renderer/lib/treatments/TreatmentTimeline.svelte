@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { RadiationEvent } from '../../../shared/api';
+	import type { TreatmentEvent } from '../../../shared/api';
 	import { scaleTime } from 'd3-scale';
 	import type { ScaleTime } from 'd3-scale';
 	import { scaleCanvas } from '$lib/vis-utils';
@@ -17,7 +17,7 @@
 		marginRight = 24,
 		marginBottom = 24
 	}: {
-		events: RadiationEvent[];
+		events: TreatmentEvent[];
 		startDate: Date;
 		endDate: Date;
 		width: number;
@@ -62,7 +62,7 @@
 
 	function draw(
 		ctx: CanvasRenderingContext2D,
-		events: RadiationEvent[],
+		events: TreatmentEvent[],
 		x: ScaleTime<number, number>,
 		barWidth: number,
 		padding: number,
