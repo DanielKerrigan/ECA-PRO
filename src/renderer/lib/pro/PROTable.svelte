@@ -15,7 +15,7 @@
 	import type { AggregationLevel } from './aggregation';
 	import { getPROMetaByConstruct } from './symptoms.svelte';
 	import ProSymptomInfo from './PROSymptomInfo.svelte';
-	import Info from 'lucide-svelte/icons/info';
+	import Info from '@lucide/svelte/icons/info';
 
 	let {
 		proMetaByKey,
@@ -46,7 +46,7 @@
 </script>
 
 <div
-	class="table-container grid h-full w-full gap-px overflow-y-auto border border-neutral-200 bg-neutral-200"
+	class="table-container grid max-h-full gap-px overflow-y-auto border border-neutral-200 bg-neutral-200"
 >
 	<div class="sticky top-0 z-10 flex gap-1 bg-neutral-200 px-2 py-1 uppercase">
 		<div class="font-semibold">Symptom</div>
@@ -93,7 +93,7 @@
 						<Popover.Trigger
 							class={cn([buttonVariants({ variant: 'ghost', size: 'icon' }), 'size-6'])}
 						>
-							<Info class="size-6" />
+							<Info class="size-4" />
 						</Popover.Trigger>
 						<Popover.Content class="w-fit max-w-sm">
 							<ProSymptomInfo {item} />

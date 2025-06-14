@@ -6,7 +6,7 @@
 	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
 	import type { PROConstructOrderMethod, PROUserConstructOrders } from '../../../shared/api';
 	import { timeFormat } from 'd3-time-format';
-	import ArrowDownUp from 'lucide-svelte/icons/arrow-down-up';
+	import ArrowDownUp from '@lucide/svelte/icons/arrow-down-up';
 
 	let {
 		orderMethod,
@@ -35,7 +35,7 @@
 
 <Popover.Root>
 	<Popover.Trigger class={cn([buttonVariants({ variant: 'ghost' }), 'size-6 p-0'])}>
-		<ArrowDownUp class="size-6" />
+		<ArrowDownUp class="size-4" />
 	</Popover.Trigger>
 	<Popover.Content class="w-fit" align="start">
 		<div class="flex flex-col gap-2">

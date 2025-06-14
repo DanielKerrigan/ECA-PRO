@@ -75,7 +75,7 @@
 	}
 </script>
 
-<div class="flex h-full w-full flex-col gap-4">
+<div class="flex h-full max-h-full w-full max-w-full flex-col gap-4">
 	<div class="flex-none">
 		<Header
 			{patientIDs}
@@ -93,7 +93,7 @@
 		/>
 	</div>
 	{#if radiationTreatment && systemicTherapyTreatment && oralTreatment && startDate && endDate}
-		<div class="min-h-0 flex-none">
+		<div class="flex-none">
 			<TreatmentsTable
 				{radiationTreatment}
 				{systemicTherapyTreatment}

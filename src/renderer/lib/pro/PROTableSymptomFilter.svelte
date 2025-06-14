@@ -8,7 +8,7 @@
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import { CategoryChecks } from './symptoms.svelte';
 	import Button from '$lib/components/ui/button/button.svelte';
-	import Filter from 'lucide-svelte/icons/filter';
+	import Filter from '@lucide/svelte/icons/filter';
 
 	let {
 		proMetaByKey,
@@ -41,7 +41,7 @@
 
 <Popover.Root>
 	<Popover.Trigger class={cn([buttonVariants({ variant: 'ghost' }), 'size-6 p-0'])}>
-		<Filter class="size-6" />
+		<Filter class="size-4" />
 	</Popover.Trigger>
 	<Popover.Content class="w-96" align="start">
 		<div class="flex min-h-0 flex-col gap-2">

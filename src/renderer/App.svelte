@@ -15,7 +15,7 @@
 	});
 </script>
 
-<div class="flex h-full w-full flex-col p-4">
+<div class="h-screen max-h-screen w-screen max-w-screen p-4">
 	{#await settingsPromise then settings}
 		<SettingsModal
 			isOpen={showSettingsModal}
