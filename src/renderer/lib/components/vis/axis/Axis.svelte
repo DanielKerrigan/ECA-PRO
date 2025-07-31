@@ -1,8 +1,8 @@
-<!-- Axis component based on d3-axis -->
+<!-- Axis component inspired by d3-axis and Observable Plot -->
 
 <script lang="ts" generics="D extends Domain">
-	import type { AxisOrientation, AxisScale, AxisTitleAnchor, Domain } from './axis';
-	import { getTitleLocation } from './axis';
+	import type { Scale, Orientation, TitleAnchor, Domain } from './axis';
+	import { getTitleLocation, textAlignToAnchor, getTickLabelTextAlign } from './axis';
 	import Label from './Label.svelte';
 
 	let {
@@ -16,6 +16,8 @@
 		marginBottom = 0,
 		tickLineSize = 6,
 		tickLabelFontSize = 10,
+		tickLabelFontFamily = 'ui-sans-serif, system-ui, sans-serif',
+		tickLabelAngle = 0,
 		tickPadding = 3,
 		tickFormat,
 		numTicks,
@@ -25,13 +27,19 @@
 		maxTickLabelSpace,
 		tickLineColor = 'black',
 		tickLabelColor = 'black',
+		showDomain = false,
+		domainColor = 'black',
 		title = '',
 		titleFontSize = 12,
+		titleFontFamily = 'ui-sans-serif, system-ui, sans-serif',
+		titleFontWeight = 400,
 		titleAnchor = 'center',
+		titleOffsetX = 0,
+		titleOffsetY = 0,
 		titleColor = 'black'
 	}: {
-		orientation: AxisOrientation;
-		scale: AxisScale<D>;
+		orientation: Orientation;
+		scale: Scale<D>;
 		translateX?: number;
 		translateY?: number;
 		marginLeft?: number;
@@ -40,6 +48,8 @@
 		marginBottom?: number;
 		tickLineSize?: number;
 		tickLabelFontSize?: number;
+		tickLabelFontFamily?: string;
+		tickLabelAngle?: number;
 		tickPadding?: number;
 		tickFormat?: (value: D) => string;
 		numTicks?: number;
@@ -49,22 +59,21 @@
 		maxTickLabelSpace?: number;
 		tickLineColor?: string;
 		tickLabelColor?: string;
+		showDomain?: boolean;
+		domainColor?: string;
 		title?: string;
 		titleFontSize?: number;
-		titleAnchor?: AxisTitleAnchor;
+		titleFontFamily?: string;
+		titleFontWeight?: number | string;
+		titleOffsetX?: number;
+		titleOffsetY?: number;
+		titleAnchor?: TitleAnchor;
 		titleColor?: string;
 	} = $props();
 
 	const k = $derived(orientation === 'top' || orientation === 'left' ? -1 : 1);
 	const tickSpacing = $derived(Math.max(tickLineSize, 0) + tickPadding);
 	const offset = $derived(scale.bandwidth ? scale.bandwidth() / 2 : 0);
-
-	const values = $derived(tickValues ?? (scale.ticks ? scale.ticks(numTicks) : scale.domain()));
-
-	const format = $derived(
-		tickFormat ??
-			(scale.tickFormat ? scale.tickFormat(numTicks) : (d: Domain) => String(d).toString())
-	);
 
 	const titleLocation = $derived(
 		getTitleLocation(
@@ -78,18 +87,25 @@
 			titleFontSize
 		)
 	);
+
+	let values = $derived(tickValues ?? (scale.ticks ? scale.ticks(numTicks) : scale.domain()));
+
+	let format = $derived(
+		tickFormat ?? (scale.tickFormat ? scale.tickFormat(numTicks) : (d: D) => String(d).toString())
+	);
 </script>
 
 <g transform="translate({translateX},{translateY})">
-	<g>
-		{#each values as d}
-			{#if orientation === 'left' || orientation == 'right'}
+	{#if orientation === 'left' || orientation == 'right'}
+		<g>
+			{#each values as d}
 				{@const y = (scale(d) ?? 0) + offset}
 				<g transform="translate(0,{y})">
 					{#if showTickMarks}
 						<line x1={tickLineSize * k} y1={0} x2={0} y2={0} stroke={tickLineColor} />
 					{/if}
 					{#if showTickLabels}
+						{@const anchor = textAlignToAnchor[getTickLabelTextAlign(orientation, tickLabelAngle)]}
 						{#if maxTickLabelSpace}
 							<Label
 								label={format(d)}
@@ -97,29 +113,49 @@
 								x={tickSpacing * k}
 								y={0}
 								dominantBaseline={'middle'}
-								textAnchor={orientation === 'left' ? 'end' : 'start'}
+								textAnchor={anchor}
 								fontSize={tickLabelFontSize}
 								fontColor={tickLabelColor}
+								fontFamily={tickLabelFontFamily}
+								angle={tickLabelAngle}
 							/>
 						{:else}
 							<text
-								x={tickSpacing * k}
-								y={0}
 								dominant-baseline={'middle'}
-								text-anchor={orientation === 'left' ? 'end' : 'start'}
+								text-anchor={anchor}
+								transform="translate({tickSpacing * k} 0) rotate({tickLabelAngle})"
+								fill={tickLabelColor}
 								font-size={tickLabelFontSize}
-								fill={tickLabelColor}>{format(d)}</text
+								font-family={tickLabelFontFamily}
 							>
+								{format(d)}
+							</text>
 						{/if}
 					{/if}
 				</g>
-			{:else}
+			{/each}
+		</g>
+
+		{#if showDomain}
+			<line
+				x1={0}
+				x2={0}
+				y1={scale.range()[0]}
+				y2={scale.range()[1]}
+				stroke-width={1}
+				stroke={domainColor}
+			/>
+		{/if}
+	{:else}
+		<g>
+			{#each values as d}
 				{@const x = (scale(d) ?? 0) + offset}
 				<g transform="translate({x},0)">
 					{#if showTickMarks}
 						<line x1={0} y1={tickLineSize * k} x2={0} y2={0} stroke={tickLineColor} />
 					{/if}
 					{#if showTickLabels}
+						{@const anchor = textAlignToAnchor[getTickLabelTextAlign(orientation, tickLabelAngle)]}
 						{#if maxTickLabelSpace}
 							<Label
 								label={format(d)}
@@ -127,33 +163,49 @@
 								x={0}
 								y={tickSpacing * k}
 								dominantBaseline={orientation === 'top' ? 'text-top' : 'hanging'}
-								textAnchor={'middle'}
+								textAnchor={anchor}
 								fontSize={tickLabelFontSize}
+								fontFamily={tickLabelFontFamily}
 								fontColor={tickLabelColor}
+								angle={tickLabelAngle}
 							/>
 						{:else}
 							<text
-								x={0}
-								y={tickSpacing * k}
 								dominant-baseline={orientation === 'top' ? 'text-top' : 'hanging'}
-								text-anchor={'middle'}
+								text-anchor={anchor}
+								transform="translate(0 {tickSpacing * k}) rotate({tickLabelAngle})"
 								font-size={tickLabelFontSize}
+								font-family={tickLabelFontFamily}
 								fill={tickLabelColor}>{format(d)}</text
 							>
 						{/if}
 					{/if}
 				</g>
-			{/if}
-		{/each}
-	</g>
+			{/each}
+		</g>
+
+		{#if showDomain}
+			<line
+				x1={scale.range()[0]}
+				x2={scale.range()[1]}
+				y1={0}
+				y2={0}
+				stroke-width={1}
+				stroke={domainColor}
+			/>
+		{/if}
+	{/if}
 
 	{#if title}
 		<text
 			fill={titleColor}
 			font-size={titleFontSize}
-			text-anchor={titleLocation.textAnchor}
-			y={titleLocation.y}
-			x={titleLocation.x}>{title}</text
+			font-family={titleFontFamily}
+			font-weight={titleFontWeight}
+			text-anchor={textAlignToAnchor[titleLocation.textAlign]}
+			transform="translate({titleLocation.x} {titleLocation.y}) rotate({titleLocation.rotate}) translate({titleOffsetX} {titleOffsetY})"
 		>
+			{title}
+		</text>
 	{/if}
 </g>

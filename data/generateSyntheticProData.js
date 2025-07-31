@@ -1,8 +1,10 @@
 import * as fs from 'fs/promises';
 import * as d3 from 'd3';
 
-// format for reading dates
-const parseDate = d3.timeParse('%Y-%m-%d');
+// string to date
+function parseDate(s) {
+	return d3.timeParse('%Y-%m-%d')(s) ?? d3.timeParse('%-m/%-d/%Y')(s);
+}
 
 // make sure x is in the range [min, max]
 function clamp(x, min, max) {
@@ -34,7 +36,7 @@ function getProMetaItems(proMetaContent) {
 
 			return {
 				// adding a key
-				key: d.ConstructName + d.ResponseItemType,
+				key: `${d.ConstructName}_${d.ResponseItemType}`,
 				itemID: d.ItemID,
 				item: d.Item,
 				constructName: d.ConstructName,
@@ -52,8 +54,8 @@ function getProMetaItems(proMetaContent) {
 function getMinMaxOralDates(oralContent) {
 	const rows = d3.csvParse(stripBom(oralContent), (d) => {
 		const id = d['ECA ID'];
-		const start = parseDate(d['oral_start']);
-		const end = parseDate(d['oral_stopdt']);
+		const start = parseDate(d['Start date of oral therapy medication']);
+		const end = parseDate(d['Date the oral therapy was discontinued']);
 		return { id, dates: [start, end] };
 	});
 
@@ -68,27 +70,10 @@ function getMinMaxOralDates(oralContent) {
 }
 
 // read the radiation treatment data and return the min and max date for each patient
-function getMinMaxRadiationDates(radiationContent) {
-	const rows = d3.csvParse(stripBom(radiationContent), (d) => {
+function getMinMaxDates(content, dateColumn) {
+	const rows = d3.csvParse(stripBom(content), (d) => {
 		const id = d['ECA ID'];
-		const date = parseDate(d['Date of radiation appointment']);
-		return { id, date };
-	});
-
-	return d3.rollup(
-		rows,
-		(g) => {
-			return d3.extent(g, (d) => d.date);
-		},
-		(d) => d['id']
-	);
-}
-
-// read the systemic therapy data and return the min and max date for each patient
-function getMinMaxSystemicTherapyDates(systemicTherapyContent) {
-	const rows = d3.csvParse(stripBom(systemicTherapyContent), (d) => {
-		const id = d['ECA ID'];
-		const date = parseDate(d['Treatment date']);
+		const date = parseDate(d[dateColumn]);
 		return { id, date };
 	});
 
@@ -102,12 +87,23 @@ function getMinMaxSystemicTherapyDates(systemicTherapyContent) {
 }
 
 // get the min and max treatment dates for each patient
-function getMinMaxTreatmentDates(oralContent, radiationContent, systemicTherapyContent) {
+function getMinMaxTreatmentDates(
+	oralContent,
+	radiationContent,
+	systemicTherapyContent,
+	surgeryContent
+) {
 	const oralDates = getMinMaxOralDates(oralContent);
-	const radiationDates = getMinMaxRadiationDates(radiationContent);
-	const systemicDates = getMinMaxSystemicTherapyDates(systemicTherapyContent);
+	const radiationDates = getMinMaxDates(radiationContent, 'Date of radiation appointment');
+	const systemicDates = getMinMaxDates(systemicTherapyContent, 'Treatment date');
+	const surgeryDates = getMinMaxDates(surgeryContent, 'Date of surgery');
 
-	const ids = d3.union(oralDates.keys(), radiationDates.keys(), systemicDates.keys());
+	const ids = d3.union(
+		oralDates.keys(),
+		radiationDates.keys(),
+		systemicDates.keys(),
+		surgeryDates.keys()
+	);
 
 	const users = [];
 
@@ -115,7 +111,8 @@ function getMinMaxTreatmentDates(oralContent, radiationContent, systemicTherapyC
 		const dates = [
 			oralDates.get(userID),
 			radiationDates.get(userID),
-			systemicDates.get(userID)
+			systemicDates.get(userID),
+			surgeryDates.get(userID)
 		].flat();
 
 		users.push({
@@ -132,12 +129,19 @@ Promise.all([
 	fs.readFile('pro-meta.csv', 'utf8'),
 	fs.readFile('treatment-oral.csv', 'utf8'),
 	fs.readFile('treatment-radiation.csv', 'utf8'),
-	fs.readFile('treatment-systemic-therapy.csv', 'utf8')
+	fs.readFile('treatment-systemic-therapy.csv', 'utf8'),
+	fs.readFile('treatment-surgery.csv', 'utf8')
 ]).then((values) => {
-	const [proMetaContent, oralContent, radiationContent, systemicTherapyContent] = values;
+	const [proMetaContent, oralContent, radiationContent, systemicTherapyContent, surgeryContent] =
+		values;
 
 	const meta = getProMetaItems(proMetaContent);
-	const users = getMinMaxTreatmentDates(oralContent, radiationContent, systemicTherapyContent);
+	const users = getMinMaxTreatmentDates(
+		oralContent,
+		radiationContent,
+		systemicTherapyContent,
+		surgeryContent
+	);
 
 	const formatDate = d3.timeFormat('%Y-%m-%d %H:%M:%S');
 

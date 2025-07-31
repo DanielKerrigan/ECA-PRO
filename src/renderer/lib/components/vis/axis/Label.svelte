@@ -4,10 +4,11 @@
 		width,
 		x,
 		y,
-		bold = false,
-		rotate = false,
+		angle = 0,
 		fontSize = 10,
+		fontFamily = 'ui-sans-serif, system-ui, sans-serif',
 		fontColor = 'black',
+		fontWeight = 400,
 		dominantBaseline = 'auto',
 		textAnchor = 'start'
 	}: {
@@ -16,9 +17,11 @@
 		x: number;
 		y: number;
 		bold?: boolean;
-		rotate?: boolean;
+		angle?: number;
 		fontSize?: number;
+		fontFamily?: string;
 		fontColor?: string;
+		fontWeight?: number | string;
 		dominantBaseline?:
 			| 'auto'
 			| 'text-bottom'
@@ -32,13 +35,9 @@
 		textAnchor?: 'start' | 'middle' | 'end';
 	} = $props();
 
-	let tspan: SVGTSpanElement;
+	let tspan: SVGTSpanElement | undefined = $state(undefined);
 
-	function updateText(label: string, width: number) {
-		if (!tspan) {
-			return;
-		}
-
+	function updateText(label: string, width: number, tspan: SVGTSpanElement) {
 		tspan.textContent = label;
 
 		let part = label;
@@ -50,18 +49,18 @@
 	}
 
 	$effect(() => {
-		updateText(label, width);
+		if (tspan) {
+			updateText(label, width, tspan);
+		}
 	});
 </script>
 
 <text
-	{x}
-	{y}
 	fill={fontColor}
-	class="tw-select-none"
-	class:tw-font-bold={bold}
 	font-size={fontSize}
-	transform={rotate ? `rotate(270, ${x}, ${y})` : null}
+	font-family={fontFamily}
+	font-weight={fontWeight}
+	transform="translate({x} {y}) rotate({angle})"
 >
 	<tspan dominant-baseline={dominantBaseline} text-anchor={textAnchor} bind:this={tspan} />
 	<title>{label}</title>

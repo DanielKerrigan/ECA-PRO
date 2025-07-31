@@ -27,7 +27,8 @@ export function readSettings(path: string): Promise<Settings> {
 			proDataPath: '',
 			radiationPath: '',
 			systemicTherapyPath: '',
-			oralPath: ''
+			oralPath: '',
+			surgeryPath: ''
 		}));
 }
 

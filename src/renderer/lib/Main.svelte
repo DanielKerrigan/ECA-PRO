@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type {
 		Data,
-		OralTreatmentEvent,
 		PROKeyToResponses,
 		PROUserConstructOrders,
 		TreatmentEvent
@@ -18,9 +17,7 @@
 	let patientID: number | undefined = $state();
 	let patientResponses: PROKeyToResponses | undefined = $state();
 	let proPatientConstructs: PROUserConstructOrders | undefined = $state();
-	let radiationTreatment: TreatmentEvent[] | undefined = $state();
-	let systemicTherapyTreatment: TreatmentEvent[] | undefined = $state();
-	let oralTreatment: OralTreatmentEvent[] | undefined = $state();
+	let treatmentEvents: TreatmentEvent[] | undefined = $state();
 	let minDate: Date | undefined = $state();
 	let maxDate: Date | undefined = $state();
 	let startDate: Date | undefined = $state();
@@ -34,14 +31,13 @@
 		patientID = newPatientID;
 		patientResponses = data.proUsersResponses.get(patientID);
 		proPatientConstructs = data.proUsersConstructOrders.get(patientID);
-		radiationTreatment = data.radiationTreatmentByUser.get(patientID);
-		systemicTherapyTreatment = data.systemicTherapyTreatmentByUser.get(patientID);
-		oralTreatment = data.oralTreatmentByUser.get(patientID);
+		treatmentEvents = data.treatmentEventsByUser.get(patientID);
 
 		if (patientResponses === undefined) {
 			minDate = undefined;
 			maxDate = undefined;
 		} else {
+			// TODO: take treatments into account here
 			const minDateTime = min(patientResponses.values(), (responses) =>
 				min(responses, (response) => response.dateTime)
 			);
@@ -92,16 +88,9 @@
 			{onChangeNormalizeBars}
 		/>
 	</div>
-	{#if radiationTreatment && systemicTherapyTreatment && oralTreatment && startDate && endDate}
+	{#if treatmentEvents && startDate && endDate}
 		<div class="flex-none">
-			<TreatmentsTable
-				{radiationTreatment}
-				{systemicTherapyTreatment}
-				{oralTreatment}
-				{startDate}
-				{endDate}
-				{aggregationLevel}
-			/>
+			<TreatmentsTable {treatmentEvents} {startDate} {endDate} {aggregationLevel} />
 		</div>
 	{/if}
 	{#if patientResponses && proPatientConstructs && startDate && endDate}

@@ -1,20 +1,27 @@
 import * as d3 from 'd3';
-import { TreatmentEvent, TreatmentEventsByUser } from '../../shared/api.js';
-import { parseDate } from '../utils.js';
+import { TreatmentEvent } from '../../shared/api.js';
 
-export function getSystemicTherapyTreatments(contents: string): TreatmentEventsByUser {
+export function getSystemicTherapyTreatments(contents: string): TreatmentEvent[] {
 	const rows = parseRows(contents);
-	return d3.group(rows, (d) => d.userID);
+	return rows;
 }
 
 function parseRows(contents: string): TreatmentEvent[] {
+	const parseDate = d3.timeParse('%Y-%m-%d');
+
+	const category = 'Systemic therapy';
+
 	return d3.csvParse(contents).map((d) => {
+		const detail = `${d['Name of [st_type]']} - ${d['Treatment site']}`;
+
 		const event: TreatmentEvent = {
+			kind: 'single',
 			userID: +d['ECA ID'],
-			treatment: `${d['Type of Systemic Therapy']} - ${d['Treatment site']}`,
-			detail: d['Name of systemic therapy'],
+			category,
+			detail,
 			// TODO: make sure date parsed correctly
 			date: parseDate(d['Treatment date'])!,
+			stopDate: null,
 			complete: d['Did the participant go to their appointment for [st_type]?'] === 'Yes',
 			extras: {
 				'The amount that the patient actually received':

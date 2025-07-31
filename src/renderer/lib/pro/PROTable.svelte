@@ -54,7 +54,7 @@
 		<PROTableSymptomFilter
 			{proMetaByKey}
 			keys={Array.from(proKeyToResponses.keys())}
-			onFilterItems={(keys) => {
+			onFilter={(keys) => {
 				filteredKeys = keys;
 			}}
 		/>

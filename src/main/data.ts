@@ -5,11 +5,11 @@ import type {
 	PROUsersConstructOrders,
 	PROItem,
 	Settings,
-	TreatmentEvent,
-	OralTreatmentEvent
+	TreatmentEvent
 } from '../shared/api.js';
 
 import * as fs from 'node:fs/promises';
+import * as d3 from 'd3';
 import { getPROItems, mergePROItems, getPROItemIDToKey } from './pro/proMeta.js';
 import { getPROResponses, groupPROResponses } from './pro/proResponses.js';
 import { getUsersConstructOrders } from './pro/proSymptomSorting.js';
@@ -17,6 +17,7 @@ import { getRadiationTreatments } from './symptoms/radiation.js';
 import { getOralTreatments } from './symptoms/oral.js';
 import { getSystemicTherapyTreatments } from './symptoms/systemicTherapy.js';
 import { stripBom } from './utils.js';
+import { getSurgeries } from './symptoms/surgery.js';
 
 export function getData(settings: Settings): Promise<Data> {
 	const promises = [
@@ -24,12 +25,19 @@ export function getData(settings: Settings): Promise<Data> {
 		fs.readFile(settings.proDataPath, 'utf8'),
 		fs.readFile(settings.radiationPath, 'utf8'),
 		fs.readFile(settings.systemicTherapyPath, 'utf8'),
-		fs.readFile(settings.oralPath, 'utf8')
+		fs.readFile(settings.oralPath, 'utf8'),
+		fs.readFile(settings.surgeryPath, 'utf8')
 	];
 
 	return Promise.allSettled(promises).then((values) => {
-		const [proMetaResult, proDataResult, radiationResult, systemicTherapyResult, oralResult] =
-			values;
+		const [
+			proMetaResult,
+			proDataResult,
+			radiationResult,
+			systemicTherapyResult,
+			oralResult,
+			surgeryResult
+		] = values;
 
 		// read PRO META data
 
@@ -53,28 +61,36 @@ export function getData(settings: Settings): Promise<Data> {
 
 		// read treatment data
 
-		const radiationTreatmentByUser =
+		const radiationTreatmentEvents =
 			radiationResult.status === 'fulfilled'
 				? getRadiationTreatments(stripBom(radiationResult.value))
-				: new Map<number, TreatmentEvent[]>();
+				: [];
 
-		const systemicTherapyTreatmentByUser =
+		const systemicTherapyTreatmentEvents =
 			systemicTherapyResult.status === 'fulfilled'
 				? getSystemicTherapyTreatments(stripBom(systemicTherapyResult.value))
-				: new Map<number, TreatmentEvent[]>();
+				: [];
 
-		const oralTreatmentByUser =
-			oralResult.status === 'fulfilled'
-				? getOralTreatments(stripBom(oralResult.value))
-				: new Map<number, OralTreatmentEvent[]>();
+		const surgeryEvents =
+			surgeryResult.status === 'fulfilled' ? getSurgeries(stripBom(surgeryResult.value)) : [];
+
+		const oralTreatmentEvents =
+			oralResult.status === 'fulfilled' ? getOralTreatments(stripBom(oralResult.value)) : [];
+
+		const treatmentEvents = ([] as TreatmentEvent[]).concat(
+			radiationTreatmentEvents,
+			systemicTherapyTreatmentEvents,
+			surgeryEvents,
+			oralTreatmentEvents
+		);
+
+		const treatmentEventsByUser = d3.group(treatmentEvents, (d) => d.userID);
 
 		return {
 			proMetaByKey,
 			proUsersResponses,
 			proUsersConstructOrders,
-			radiationTreatmentByUser,
-			systemicTherapyTreatmentByUser,
-			oralTreatmentByUser
+			treatmentEventsByUser
 		};
 	});
 }

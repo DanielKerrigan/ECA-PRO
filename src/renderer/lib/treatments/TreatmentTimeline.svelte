@@ -5,6 +5,7 @@
 	import { scaleCanvas } from '$lib/vis-utils';
 	import { axis } from '$lib/components/vis/axis/axis';
 	import { timeDay } from 'd3-time';
+	import { max, min } from '../../../shared/utils';
 
 	let {
 		events,
@@ -15,7 +16,7 @@
 		marginLeft = 24,
 		marginTop = 2,
 		marginRight = 24,
-		marginBottom = 24
+		marginBottom = 18
 	}: {
 		events: TreatmentEvent[];
 		startDate: Date;
@@ -48,26 +49,36 @@
 	);
 
 	const filteredEvents = $derived(
-		events.filter((event) => event.date >= startDate && event.date <= endDatePlusOne)
+		events.filter((event) => {
+			if (event.kind === 'single') {
+				return event.date >= startDate && event.date <= endDatePlusOne;
+			} else {
+				return (
+					event.date <= endDatePlusOne && (event.stopDate === null || event.stopDate >= startDate)
+				);
+			}
+		})
 	);
 
-	function getBarWidth(x: ScaleTime<number, number>, padding: number): number {
+	function getBarWidthForDay(x: ScaleTime<number, number>, padding: number): number {
 		const start = x.domain()[0];
 		const startPlusOne = timeDay.offset(start, 1);
 		const dayWidth = x(startPlusOne) - x(start) - 2 * padding;
 		return dayWidth;
 	}
 
-	const barWidth = $derived(getBarWidth(x, padding));
+	const barWidth = $derived(getBarWidthForDay(x, padding));
 
 	function draw(
 		ctx: CanvasRenderingContext2D,
 		events: TreatmentEvent[],
 		x: ScaleTime<number, number>,
-		barWidth: number,
+		barWidthForDay: number,
 		padding: number,
 		width: number,
-		height: number
+		height: number,
+		startDate: Date,
+		endDatePlusOne: Date
 	) {
 		ctx.save();
 
@@ -76,17 +87,26 @@
 
 		const barHeight = height - marginBottom - marginTop;
 
-		ctx.fillStyle = 'black';
+		ctx.strokeStyle = 'steelblue';
+		ctx.fillStyle = 'steelblue';
 
 		for (const event of events) {
-			const barX = x(event.date) + padding;
+			// max here because for a range event, event.date could be earlier than startDate
+			const barX = x(max(event.date, startDate)) + padding;
+			const barWidth =
+				event.kind === 'single'
+					? barWidthForDay
+					: x(min(event.stopDate ?? endDatePlusOne, endDatePlusOne)) - barX;
 
+			ctx.strokeRect(barX, marginTop, barWidth, barHeight);
 			ctx.fillRect(barX, marginTop, barWidth, barHeight);
 		}
 
 		axis(ctx, 'bottom', x, {
 			translateY: height - marginBottom,
-			showTickMarks: true
+			showTickMarks: true,
+			tickLineSize: 4,
+			tickPadding: 2
 		});
 
 		ctx.restore();
@@ -100,7 +120,7 @@
 
 	$effect(() => {
 		if (ctx) {
-			draw(ctx, filteredEvents, x, barWidth, padding, width, height);
+			draw(ctx, filteredEvents, x, barWidth, padding, width, height, startDate, endDatePlusOne);
 		}
 	});
 </script>

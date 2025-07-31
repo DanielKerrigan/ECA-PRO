@@ -20,7 +20,7 @@ export function getPROItems(metaContents: string): PROItem[] {
 			];
 
 			return {
-				key: d.ConstructName + d.ResponseItemType,
+				key: `${d.ConstructName}_${d.ResponseItemType}`,
 				itemID: +d.ItemID,
 				item: d.Item,
 				constructName: d.ConstructName,

@@ -1,11 +1,13 @@
-import { fitString } from '$lib/vis-utils';
+/* Axis component inspired by d3-axis and Observable Plot */
 
-export type AxisOrientation = 'top' | 'right' | 'bottom' | 'left';
-export type AxisTitleAnchor = 'top' | 'right' | 'bottom' | 'left' | 'center';
+// types
+
+export type Orientation = 'top' | 'right' | 'bottom' | 'left';
+export type TitleAnchor = 'top' | 'right' | 'bottom' | 'left' | 'center';
 
 export type Domain = number | string | Date;
 
-export type AxisScale<D extends Domain> = {
+export type Scale<D extends Domain> = {
 	(x: D): number | undefined;
 	domain(): D[];
 	range(): number[];
@@ -14,16 +16,64 @@ export type AxisScale<D extends Domain> = {
 	tickFormat?(count?: number, specifier?: string): (d: D) => string;
 };
 
+// Canvas text cutoff
+
+// https://stackoverflow.com/a/68395616
+function binarySearch(maxIndex: number, getValue: (guess: number) => number, targetValue: number) {
+	let minIndex = 0;
+
+	while (minIndex <= maxIndex) {
+		const guessIndex = Math.floor((minIndex + maxIndex) / 2);
+		const guessValue = getValue(guessIndex);
+
+		if (guessValue === targetValue) {
+			return guessIndex;
+		} else if (guessValue < targetValue) {
+			minIndex = guessIndex + 1;
+		} else {
+			maxIndex = guessIndex - 1;
+		}
+	}
+
+	return maxIndex;
+}
+
+// https://stackoverflow.com/a/68395616
+function fitString(ctx: CanvasRenderingContext2D, str: string, maxWidth: number) {
+	const width = ctx.measureText(str).width;
+	const ellipsis = '…';
+	const ellipsisWidth = ctx.measureText(ellipsis).width;
+
+	if (width <= maxWidth || width <= ellipsisWidth) {
+		return str;
+	}
+
+	const index = binarySearch(
+		str.length - 1,
+		(guess) => ctx.measureText(str.substring(0, guess)).width,
+		maxWidth - ellipsisWidth
+	);
+
+	return str.substring(0, index) + ellipsis;
+}
+
+// axis title
+
 export function getTitleLocation<D extends Domain>(
-	orientation: AxisOrientation,
-	titleAnchor: AxisTitleAnchor,
-	scale: AxisScale<D>,
+	orientation: Orientation,
+	titleAnchor: TitleAnchor,
+	scale: Scale<D>,
 	marginLeft: number,
 	marginTop: number,
 	marginRight: number,
 	marginBottom: number,
 	fontSize: number
-): { textAnchor: string; x: number; y: number } {
+): {
+	textAlign: 'start' | 'end' | 'center';
+	x: number;
+	y: number;
+	rotate: number;
+} {
 	const minRange = Math.min(...scale.range());
 	const maxRange = Math.max(...scale.range());
 	const midRange = (minRange + maxRange) / 2;
@@ -31,50 +81,100 @@ export function getTitleLocation<D extends Domain>(
 	const isLeft = orientation === 'left';
 	const isRight = orientation === 'right';
 	const isTop = orientation === 'top';
-	const isBottom = orientation === 'bottom';
 
 	if (isLeft || isRight) {
 		const x = isLeft ? -marginLeft : marginRight;
 		if (titleAnchor === 'top') {
 			const yPos = minRange - marginTop;
 			const dy = 0.71 * fontSize;
-			return { textAnchor: isLeft ? 'start' : 'end', x, y: yPos + dy };
+			return {
+				textAlign: isLeft ? 'start' : 'end',
+				x,
+				y: yPos + dy,
+				rotate: 0
+			};
 		} else if (titleAnchor === 'bottom') {
 			return {
-				textAnchor: isLeft ? 'start' : 'end',
+				textAlign: isLeft ? 'start' : 'end',
 				x,
-				y: maxRange + marginBottom
+				y: maxRange + marginBottom,
+				rotate: 0
 			};
 		} else {
+			const k = isLeft ? 1 : -1;
+			const xPos = x + (k * fontSize) / 2;
 			const yPos = midRange;
-			const dy = 0.32 * fontSize;
-			return { textAnchor: isLeft ? 'end' : 'start', x, y: yPos + dy };
+			const dy = k * 0.71 * fontSize;
+			return {
+				textAlign: 'center',
+				x: xPos + dy,
+				y: yPos,
+				rotate: isLeft ? -90 : 90
+			};
 		}
 	} else {
 		const y = isTop ? -marginTop + fontSize / 2 : marginBottom - fontSize / 2;
 		const dy = isTop ? fontSize * 0.71 : 0;
 		if (titleAnchor === 'left') {
 			return {
-				textAnchor: 'start',
+				textAlign: 'start',
 				x: minRange - marginLeft,
-				y: y + dy
+				y: y + dy,
+				rotate: 0
 			};
 		} else if (titleAnchor === 'right') {
-			return { textAnchor: 'end', x: maxRange + marginRight, y: y + dy };
+			return {
+				textAlign: 'end',
+				x: maxRange + marginRight,
+				y: y + dy,
+				rotate: 0
+			};
 		} else {
 			return {
-				textAnchor: 'middle',
+				textAlign: 'center',
 				x: midRange,
-				y: y + dy
+				y: y + dy,
+				rotate: 0
 			};
 		}
 	}
 }
 
+// text anchor
+
+export function getTickLabelTextAlign(
+	orientation: Orientation,
+	angle: number
+): 'start' | 'center' | 'end' {
+	if (orientation === 'left') {
+		return 'end';
+	} else if (orientation === 'right') {
+		return 'start';
+	} else if (angle === 0) {
+		return 'center';
+	} else if (angle > 0 && orientation === 'top') {
+		return 'end';
+	} else if (angle < 0 && orientation === 'top') {
+		return 'start';
+	} else if (angle > 0 && orientation === 'bottom') {
+		return 'start';
+	} else {
+		return 'end';
+	}
+}
+
+export const textAlignToAnchor = {
+	start: 'start' as const,
+	center: 'middle' as const,
+	end: 'end' as const
+};
+
+// canvas drawing
+
 export function axis<D extends Domain>(
 	ctx: CanvasRenderingContext2D,
-	orientation: AxisOrientation,
-	scale: AxisScale<D>,
+	orientation: Orientation,
+	scale: Scale<D>,
 	{
 		translateX = 0,
 		translateY = 0,
@@ -84,6 +184,8 @@ export function axis<D extends Domain>(
 		marginBottom = 0,
 		tickLineSize = 6,
 		tickLabelFontSize = 10,
+		tickLabelFontFamily = 'ui-sans-serif, system-ui, sans-serif',
+		tickLabelAngle = 0,
 		tickPadding = 3,
 		tickFormat,
 		numTicks,
@@ -97,7 +199,11 @@ export function axis<D extends Domain>(
 		domainColor = 'black',
 		title = '',
 		titleFontSize = 12,
+		titleFontFamily = 'ui-sans-serif, system-ui, sans-serif',
+		titleFontWeight = 400,
 		titleAnchor = 'center',
+		titleOffsetX = 0,
+		titleOffsetY = 0,
 		titleColor = 'black'
 	}: {
 		translateX?: number;
@@ -108,6 +214,8 @@ export function axis<D extends Domain>(
 		marginBottom?: number;
 		tickLineSize?: number;
 		tickLabelFontSize?: number;
+		tickLabelFontFamily?: string;
+		tickLabelAngle?: number;
 		tickPadding?: number;
 		tickFormat?: (value: D) => string;
 		numTicks?: number;
@@ -121,7 +229,11 @@ export function axis<D extends Domain>(
 		domainColor?: string;
 		title?: string;
 		titleFontSize?: number;
-		titleAnchor?: AxisTitleAnchor;
+		titleFontFamily?: string;
+		titleFontWeight?: number;
+		titleAnchor?: TitleAnchor;
+		titleOffsetX?: number;
+		titleOffsetY?: number;
 		titleColor?: string;
 	} = {}
 ): void {
@@ -149,24 +261,14 @@ export function axis<D extends Domain>(
 
 	ctx.translate(translateX, translateY);
 
-	ctx.font = `${tickLabelFontSize}px sans-serif`;
+	ctx.font = `${tickLabelFontSize}px ${tickLabelFontFamily}`;
 	ctx.globalAlpha = 1;
-
-	ctx.strokeStyle = domainColor;
-	ctx.lineWidth = 1;
-
-	if (showDomain) {
-		ctx.beginPath();
-		ctx.moveTo(scale.range()[0], 0);
-		ctx.lineTo(scale.range()[1], 0);
-		ctx.stroke();
-	}
 
 	ctx.fillStyle = tickLabelColor;
 	ctx.strokeStyle = tickLineColor;
 
-	values.forEach((d) => {
-		if (orientation === 'left' || orientation === 'right') {
+	if (orientation === 'left' || orientation === 'right') {
+		values.forEach((d) => {
 			const y = (scale(d) ?? 0) + offset;
 
 			if (showTickMarks) {
@@ -177,14 +279,30 @@ export function axis<D extends Domain>(
 			}
 
 			if (showTickLabels) {
+				ctx.save();
+				ctx.translate(tickSpacing * k, y);
+				ctx.rotate((tickLabelAngle * Math.PI) / 180);
 				ctx.textBaseline = 'middle';
 				ctx.textAlign = orientation === 'left' ? 'end' : 'start';
 				const tickLabel = maxTickLabelSpace
 					? fitString(ctx, format(d), maxTickLabelSpace)
 					: format(d);
-				ctx.fillText(tickLabel, tickSpacing * k, y);
+				ctx.fillText(tickLabel, 0, 0);
+				ctx.restore();
 			}
-		} else {
+		});
+
+		ctx.strokeStyle = domainColor;
+		ctx.lineWidth = 1;
+
+		if (showDomain) {
+			ctx.beginPath();
+			ctx.moveTo(0, scale.range()[0]);
+			ctx.lineTo(0, scale.range()[1]);
+			ctx.stroke();
+		}
+	} else {
+		values.forEach((d) => {
 			const x = (scale(d) ?? 0) + offset;
 
 			if (showTickMarks) {
@@ -195,22 +313,38 @@ export function axis<D extends Domain>(
 			}
 
 			if (showTickLabels) {
+				ctx.save();
+				ctx.translate(x, tickSpacing * k);
+				ctx.rotate((tickLabelAngle * Math.PI) / 180);
 				ctx.textBaseline = orientation === 'top' ? 'bottom' : 'top';
 				ctx.textAlign = 'center';
 				const tickLabel = maxTickLabelSpace
 					? fitString(ctx, format(d), maxTickLabelSpace)
 					: format(d);
-				ctx.fillText(tickLabel, x, tickSpacing * k);
+				ctx.fillText(tickLabel, 0, 0);
+				ctx.restore();
 			}
+		});
+
+		ctx.strokeStyle = domainColor;
+		ctx.lineWidth = 1;
+
+		if (showDomain) {
+			ctx.beginPath();
+			ctx.moveTo(scale.range()[0], 0);
+			ctx.lineTo(scale.range()[1], 0);
+			ctx.stroke();
 		}
-	});
+	}
 
 	if (title) {
-		ctx.textAlign = 'start';
-		ctx.textBaseline = 'alphabetic';
-		ctx.font = `${titleFontSize}px sans-serif`;
 		ctx.fillStyle = titleColor;
-		ctx.fillText(title, titleLocation.x, titleLocation.y);
+		ctx.textAlign = titleLocation.textAlign;
+		ctx.textBaseline = 'alphabetic';
+		ctx.font = `${titleFontWeight} ${titleFontSize}px ${titleFontFamily}`;
+		ctx.translate(titleLocation.x, titleLocation.y);
+		ctx.rotate((titleLocation.rotate * Math.PI) / 180);
+		ctx.fillText(title, titleOffsetX, titleOffsetY);
 	}
 
 	ctx.restore();

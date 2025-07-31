@@ -27,6 +27,7 @@
 		{ label: 'PRO Data', key: 'proDataPath' },
 		{ label: 'Radiation Treatment', key: 'radiationPath' },
 		{ label: 'Systemic Therapy Treatment', key: 'systemicTherapyPath' },
+		{ label: 'Surgery', key: 'surgeryPath' },
 		{ label: 'Oral Treatment', key: 'oralPath' }
 	];
 
@@ -50,7 +51,7 @@
 			<Dialog.Title>Settings</Dialog.Title>
 		</Dialog.Header>
 
-		<div class="flex min-h-0 min-w-0 max-w-full flex-col gap-4 overflow-y-auto p-1">
+		<div class="flex min-h-0 max-w-full min-w-0 flex-col gap-4 overflow-y-auto p-1">
 			{#each pathInputs as { label, key }}
 				<div class="flex flex-col gap-2">
 					<div class="font-semibold">{label}</div>

@@ -1,38 +1,47 @@
 <script lang="ts">
 	import * as d3 from 'd3';
-	import type { OralTreatmentEvent, TreatmentEvent } from '../../../shared/api';
 	import TreatmentTimeline from './TreatmentTimeline.svelte';
+	import TreatmentTableFilter from './TreatmentTableFilter.svelte';
+	import type { GroupedTreatments, TreatmentEvent } from '../../../shared/api';
 
 	let {
-		radiationTreatment,
-		systemicTherapyTreatment,
-		oralTreatment,
+		treatmentEvents,
 		startDate,
 		endDate,
 		aggregationLevel
 	}: {
-		radiationTreatment: TreatmentEvent[];
-		systemicTherapyTreatment: TreatmentEvent[];
-		oralTreatment: OralTreatmentEvent[];
+		treatmentEvents: TreatmentEvent[];
 		startDate: Date;
 		endDate: Date;
 		aggregationLevel: 'none' | 'weekly' | 'monthly';
 	} = $props();
 
-	const groupedRadiation = $derived(
+	const groupedTreatments: GroupedTreatments = $derived(
 		d3.groups(
-			radiationTreatment,
-			(d) => d.treatment,
+			treatmentEvents,
+			(d) => d.category,
 			(d) => d.detail
 		)
 	);
 
-	const groupedSystemicTherapy = $derived(
-		d3.groups(
-			systemicTherapyTreatment,
-			(d) => d.treatment,
-			(d) => d.detail
-		)
+	$inspect(groupedTreatments);
+
+	const keys = $derived(
+		groupedTreatments
+			.map(([category, detailAndEvents]) =>
+				detailAndEvents.map(([detail]) => `${category}_${detail}`)
+			)
+			.flat()
+	);
+	let filteredKeys: string[] = $derived($state.snapshot(keys));
+
+	const filteredGroupedTreatments: GroupedTreatments = $derived(
+		groupedTreatments
+			.map(([category, detailAndEvents]): GroupedTreatments[number] => [
+				category,
+				detailAndEvents.filter(([detail]) => filteredKeys.includes(`${category}_${detail}`))
+			])
+			.filter(([, detailAndEvents]) => detailAndEvents.length > 0)
 	);
 
 	let visWidth = $state(0);
@@ -41,8 +50,9 @@
 <div
 	class="table-container grid h-full w-full gap-px overflow-y-auto border border-neutral-200 bg-neutral-200"
 >
-	<div class="sticky top-0 z-10 flex gap-1 bg-neutral-200 px-2 py-1 font-semibold uppercase">
-		Treatment
+	<div class="sticky top-0 z-10 flex gap-1 bg-neutral-200 px-2 py-1 uppercase">
+		<div class="font-semibold">Treatment</div>
+		<TreatmentTableFilter {groupedTreatments} onFilter={(keys) => (filteredKeys = keys)} />
 	</div>
 	<div class="sticky top-0 z-10 flex gap-1 bg-neutral-200 px-2 py-1 font-semibold uppercase">
 		Detail
@@ -53,39 +63,18 @@
 	>
 		Events
 	</div>
-	{#each groupedRadiation as [treatment, detailAndEvents]}
+	{#each filteredGroupedTreatments as [category, detailAndEvents]}
 		<div
 			style:grid-row={`span ${detailAndEvents.length}`}
 			class="flex items-center bg-white px-2 py-1"
 		>
-			{treatment}
+			{category}
 		</div>
 		{#each detailAndEvents as [detail, events]}
 			<div class="flex items-center bg-white px-2 py-1">
 				{detail}
 			</div>
-			<div class="bg-white">
-				{#if aggregationLevel === 'none'}
-					<TreatmentTimeline {events} width={visWidth} {startDate} {endDate} />
-				{:else}
-					<TreatmentTimeline {events} width={visWidth} {startDate} {endDate} />
-				{/if}
-			</div>
-		{/each}
-	{/each}
-
-	{#each groupedSystemicTherapy as [treatment, detailAndEvents]}
-		<div
-			style:grid-row={`span ${detailAndEvents.length}`}
-			class="flex items-center bg-white px-2 py-1"
-		>
-			{treatment}
-		</div>
-		{#each detailAndEvents as [detail, events]}
-			<div class="flex items-center bg-white px-2 py-1">
-				{detail}
-			</div>
-			<div class="bg-white">
+			<div class="flex items-center bg-white">
 				{#if aggregationLevel === 'none'}
 					<TreatmentTimeline {events} width={visWidth} {startDate} {endDate} />
 				{:else}
