@@ -5,21 +5,24 @@
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
 	import Filter from '@lucide/svelte/icons/filter';
 	import CheckboxFilter from '$lib/components/ui/checkbox-filter/CheckboxFilter.svelte';
+	import { ParentChecks } from '$lib/components/ui/checkbox-filter/index.svelte';
 	import type { CheckboxFilterData } from '$lib/components/ui/checkbox-filter/index.svelte';
 	import { getPROMetaByCategoryAndConstruct } from './symptoms.svelte';
 	import { ascending } from 'd3-array';
 
 	let {
 		proMetaByKey,
-		keys,
+		allKeys,
 		onFilter
 	}: {
 		proMetaByKey: PROMetaByKey;
-		keys: string[];
+		allKeys: string[];
 		onFilter: (keys: string[]) => void;
 	} = $props();
 
-	const proMetaByCategoryConstruct = $derived(getPROMetaByCategoryAndConstruct(proMetaByKey, keys));
+	const proMetaByCategoryConstruct = $derived(
+		getPROMetaByCategoryAndConstruct(proMetaByKey, allKeys)
+	);
 
 	const data: CheckboxFilterData = $derived(
 		proMetaByCategoryConstruct
@@ -38,6 +41,8 @@
 			})
 			.toSorted((a, b) => ascending(a.name, b.name))
 	);
+
+	let checks = $derived(new ParentChecks(data));
 </script>
 
 <Popover.Root>
@@ -45,6 +50,6 @@
 		<Filter class="size-4" />
 	</Popover.Trigger>
 	<Popover.Content class="w-96" align="start">
-		<CheckboxFilter {data} {onFilter} title="Symptom Filters" />
+		<CheckboxFilter bind:checks {onFilter} title="Symptom Filters" />
 	</Popover.Content>
 </Popover.Root>

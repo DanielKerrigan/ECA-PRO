@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { PROResponse, PROItem, MergedPROItem } from '../../../shared/api';
+	import type { PROResponse, MergedPROItem } from '../../../shared/api';
 	import { max } from 'd3-array';
 	import { scaleTime, scaleLinear } from 'd3-scale';
 	import type { ScaleTime, ScaleLinear } from 'd3-scale';
@@ -7,9 +7,8 @@
 	import type { Series } from 'd3-shape';
 	import { getPROColor, scaleCanvas } from '$lib/vis-utils';
 	import { axis } from '$lib/components/vis/axis/axis';
-	import { timeDay, timeWeek, timeMonth } from 'd3-time';
-	import { getAggregatedSummaryData } from './aggregation';
-	import type { AggregatedPROResponses } from './aggregation';
+	import { getAggregatedPROResponses } from '../aggregation';
+	import type { AggregatedPROResponses, AggregationLevel } from '../aggregation';
 	import { format } from 'd3-format';
 
 	let {
@@ -20,7 +19,7 @@
 		endDate,
 		normalizeBars,
 		width,
-		height = 128,
+		height = 96,
 		marginLeft = 40,
 		marginTop = 24,
 		marginRight = 24,
@@ -28,7 +27,7 @@
 	}: {
 		responses: PROResponse[];
 		item: MergedPROItem;
-		aggregationLevel: string;
+		aggregationLevel: Exclude<AggregationLevel, 'none'>;
 		startDate: Date;
 		endDate: Date;
 		normalizeBars: boolean;
@@ -40,8 +39,6 @@
 		marginBottom?: number;
 	} = $props();
 
-	const endDatePlusOne = $derived(timeDay.offset(endDate, 1));
-
 	let canvas: HTMLCanvasElement | null = $state(null);
 	let ctx: CanvasRenderingContext2D | null = $derived(
 		canvas
@@ -51,15 +48,8 @@
 			: null
 	);
 
-	const filteredResponses = $derived(
-		responses.filter(
-			(response) => response.dateTime >= startDate && response.dateTime <= endDatePlusOne
-		)
-	);
-
-	const timeInterval = $derived(aggregationLevel === 'weekly' ? timeWeek : timeMonth);
 	const aggregatedData: AggregatedPROResponses[] = $derived(
-		getAggregatedSummaryData(filteredResponses, timeInterval, startDate, endDatePlusOne)
+		getAggregatedPROResponses(responses, aggregationLevel, startDate, endDate)
 	);
 
 	const keys = $derived([
@@ -78,7 +68,7 @@
 
 	const x = $derived(
 		scaleTime()
-			.domain([startDate, endDatePlusOne])
+			.domain([startDate, endDate])
 			.range([marginLeft, width - marginRight])
 	);
 
@@ -123,7 +113,7 @@
 			translateX: marginLeft,
 			showTickMarks: true,
 			showDomain: false,
-			tickValues: normalizeBars ? y.ticks(5) : y.ticks(5).filter(Number.isInteger),
+			tickValues: normalizeBars ? y.ticks(4) : y.ticks(4).filter(Number.isInteger),
 			tickFormat: normalizeBars ? format('.0%') : format('d'),
 			title: normalizeBars ? 'Percentage' : 'Count',
 			titleAnchor: 'top',

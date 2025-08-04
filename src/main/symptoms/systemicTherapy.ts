@@ -14,6 +14,13 @@ function parseRows(contents: string): TreatmentEvent[] {
 	return d3.csvParse(contents).map((d) => {
 		const detail = `${d['Name of [st_type]']} - ${d['Treatment site']}`;
 
+		const amtRecieved = d['The amount of [st_type] that the patient actually received'];
+		const missed = amtRecieved === '';
+
+		const extras = missed
+			? []
+			: [{ label: 'The amount that the patient actually received', value: amtRecieved }];
+
 		const event: TreatmentEvent = {
 			kind: 'single',
 			userID: +d['ECA ID'],
@@ -22,11 +29,8 @@ function parseRows(contents: string): TreatmentEvent[] {
 			// TODO: make sure date parsed correctly
 			date: parseDate(d['Treatment date'])!,
 			stopDate: null,
-			complete: d['Did the participant go to their appointment for [st_type]?'] === 'Yes',
-			extras: {
-				'The amount that the patient actually received':
-					d['The amount that the patient actually received']
-			}
+			missed,
+			extras
 		};
 
 		return event;

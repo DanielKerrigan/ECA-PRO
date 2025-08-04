@@ -1,12 +1,12 @@
 import * as d3 from 'd3';
-import { TreatmentEvent } from '../../shared/api.js';
+import { SingleTreatmentEvent } from '../../shared/api.js';
 
-export function getSurgeries(contents: string): TreatmentEvent[] {
+export function getSurgeries(contents: string): SingleTreatmentEvent[] {
 	const rows = parseRows(contents);
 	return rows;
 }
 
-function parseRows(contents: string): TreatmentEvent[] {
+function parseRows(contents: string): SingleTreatmentEvent[] {
 	const parseDate = d3.timeParse('%Y-%m-%d');
 
 	const category = 'Surgery';
@@ -14,7 +14,7 @@ function parseRows(contents: string): TreatmentEvent[] {
 	return d3.csvParse(contents).map((d) => {
 		const detail = d['Name of surgery/surgery site'];
 
-		const event: TreatmentEvent = {
+		const event: SingleTreatmentEvent = {
 			kind: 'single',
 			userID: +d['ECA ID'],
 			category,
@@ -22,8 +22,8 @@ function parseRows(contents: string): TreatmentEvent[] {
 			// TODO: make sure date parsed correctly
 			date: parseDate(d['Date of surgery '])!,
 			stopDate: null,
-			complete: true,
-			extras: {}
+			missed: false,
+			extras: []
 		};
 
 		return event;

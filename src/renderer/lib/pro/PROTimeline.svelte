@@ -12,8 +12,8 @@
 		startDate,
 		endDate,
 		width,
-		height = 128,
-		marginLeft = 24,
+		height = 96,
+		marginLeft = 40,
 		marginTop = 8,
 		marginRight = 24,
 		marginBottom = 24
@@ -30,8 +30,6 @@
 		marginBottom?: number;
 	} = $props();
 
-	const endDatePlusOne = $derived(timeDay.offset(endDate, 1));
-
 	let canvas: HTMLCanvasElement | null = $state(null);
 	let ctx: CanvasRenderingContext2D | null = $derived(
 		canvas
@@ -43,7 +41,7 @@
 
 	const x = $derived(
 		scaleTime()
-			.domain([startDate, endDatePlusOne])
+			.domain([startDate, endDate])
 			.range([marginLeft, width - marginRight])
 	);
 
@@ -54,9 +52,7 @@
 	);
 
 	const filteredResponses = $derived(
-		responses.filter(
-			(response) => response.dateTime >= startDate && response.dateTime <= endDatePlusOne
-		)
+		responses.filter((response) => response.dateTime >= startDate && response.dateTime <= endDate)
 	);
 
 	function getBarWidth(startDate: Date, endDate: Date, x: ScaleTime<number, number>): number {
@@ -70,7 +66,7 @@
 		return Math.min(Math.max(minWidth, idealBarWidth), maxWidth);
 	}
 
-	const barWidth = $derived(getBarWidth(startDate, endDatePlusOne, x));
+	const barWidth = $derived(getBarWidth(startDate, endDate, x));
 
 	function draw(
 		ctx: CanvasRenderingContext2D,

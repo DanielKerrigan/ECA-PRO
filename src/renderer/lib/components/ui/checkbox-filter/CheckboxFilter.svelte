@@ -3,22 +3,19 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import Button from '$lib/components/ui/button/button.svelte';
-	import type { CheckboxFilterData } from './index.svelte';
 	import { ParentChecks } from './index.svelte';
 
 	let {
-		data,
+		checks = $bindable(),
 		onFilter,
 		title = 'Filters'
 	}: {
-		data: CheckboxFilterData;
+		checks: ParentChecks;
 		onFilter: (keys: string[]) => void;
 		title?: string;
 	} = $props();
 
 	const uid = $props.id();
-
-	const checks: ParentChecks = $derived(new ParentChecks(data));
 
 	let searchValue = $state('');
 

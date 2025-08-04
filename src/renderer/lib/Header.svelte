@@ -3,7 +3,8 @@
 	import * as Select from '$lib/components/ui/select/index.js';
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import DateRangeInputs from '$lib/components/ui/DateRangeInputs.svelte';
-	import { aggregationLevels, type AggregationLevel } from './pro/aggregation';
+	import { aggregationLevels } from './aggregation';
+	import type { AggregationLevel } from './aggregation';
 	import { capitalize } from './utils';
 
 	let {

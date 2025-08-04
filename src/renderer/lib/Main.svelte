@@ -6,9 +6,9 @@
 		TreatmentEvent
 	} from '../../shared/api';
 	import Header from './Header.svelte';
-	import type { AggregationLevel } from './pro/aggregation';
+	import type { AggregationLevel } from './aggregation';
 	import PROTable from './pro/PROTable.svelte';
-	import { ascending, max, min } from 'd3-array';
+	import { ascending, max, min, extent } from 'd3-array';
 	import { timeDay, timeMonth } from 'd3-time';
 	import TreatmentsTable from './treatments/TreatmentsTable.svelte';
 
@@ -32,11 +32,12 @@
 		patientResponses = data.proUsersResponses.get(patientID);
 		proPatientConstructs = data.proUsersConstructOrders.get(patientID);
 		treatmentEvents = data.treatmentEventsByUser.get(patientID);
+		minDate = undefined;
+		maxDate = undefined;
+		startDate = undefined;
+		endDate = undefined;
 
-		if (patientResponses === undefined) {
-			minDate = undefined;
-			maxDate = undefined;
-		} else {
+		if (patientResponses !== undefined) {
 			// TODO: take treatments into account here
 			const minDateTime = min(patientResponses.values(), (responses) =>
 				min(responses, (response) => response.dateTime)
@@ -50,7 +51,20 @@
 			maxDate = maxDateTime === undefined ? undefined : timeDay.floor(maxDateTime);
 		}
 
+		if (treatmentEvents !== undefined) {
+			const [minTreatmentDate, maxTreatmentDate] = extent(
+				treatmentEvents,
+				(d) => d.stopDate ?? d.date
+			);
+
+			// d3.min([minDate, minTreatmentDate]) should work, but typescript is unhappy
+			minDate = min<Date | undefined, Date>([minDate, minTreatmentDate], (d) => d);
+			maxDate = max<Date | undefined, Date>([maxDate, maxTreatmentDate], (d) => d);
+		}
+
 		if (minDate && maxDate) {
+			// offset by 1 to include events that occur on the max date
+			maxDate = timeDay.offset(maxDate, 1);
 			const idealStart = timeMonth.offset(maxDate, -3);
 			startDate = idealStart >= minDate ? idealStart : minDate;
 			endDate = maxDate;
@@ -89,7 +103,7 @@
 		/>
 	</div>
 	{#if treatmentEvents && startDate && endDate}
-		<div class="flex-none">
+		<div class="max-h-[25%] min-h-0 flex-none">
 			<TreatmentsTable {treatmentEvents} {startDate} {endDate} {aggregationLevel} />
 		</div>
 	{/if}

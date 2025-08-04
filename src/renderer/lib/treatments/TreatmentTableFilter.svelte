@@ -4,6 +4,7 @@
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
 	import Filter from '@lucide/svelte/icons/filter';
 	import CheckboxFilter from '$lib/components/ui/checkbox-filter/CheckboxFilter.svelte';
+	import { ParentChecks } from '$lib/components/ui/checkbox-filter/index.svelte';
 	import type { CheckboxFilterData } from '$lib/components/ui/checkbox-filter/index.svelte';
 	import type { GroupedTreatments } from '../../../shared/api';
 
@@ -15,7 +16,7 @@
 		onFilter: (keys: string[]) => void;
 	} = $props();
 
-	const data: CheckboxFilterData = $state(
+	const data: CheckboxFilterData = $derived(
 		groupedTreatments.map(([category, detailAndEvents]) => ({
 			name: category,
 			children: detailAndEvents.map(([detail]) => ({
@@ -24,6 +25,8 @@
 			}))
 		}))
 	);
+
+	let checks = $derived(new ParentChecks(data));
 </script>
 
 <Popover.Root>
@@ -31,6 +34,6 @@
 		<Filter class="size-4" />
 	</Popover.Trigger>
 	<Popover.Content class="w-96" align="start">
-		<CheckboxFilter {data} {onFilter} title="Treatment Filters" />
+		<CheckboxFilter bind:checks {onFilter} title="Treatment Filters" />
 	</Popover.Content>
 </Popover.Root>

@@ -3,6 +3,8 @@
 	import TreatmentTimeline from './TreatmentTimeline.svelte';
 	import TreatmentTableFilter from './TreatmentTableFilter.svelte';
 	import type { GroupedTreatments, TreatmentEvent } from '../../../shared/api';
+	import TreatmentTableEventsColumnInfo from './TreatmentTableEventsColumnInfo.svelte';
+	import { getAggregatedTreatmentEvents, type AggregationLevel } from '$lib/aggregation';
 
 	let {
 		treatmentEvents,
@@ -13,7 +15,7 @@
 		treatmentEvents: TreatmentEvent[];
 		startDate: Date;
 		endDate: Date;
-		aggregationLevel: 'none' | 'weekly' | 'monthly';
+		aggregationLevel: AggregationLevel;
 	} = $props();
 
 	const groupedTreatments: GroupedTreatments = $derived(
@@ -23,8 +25,6 @@
 			(d) => d.detail
 		)
 	);
-
-	$inspect(groupedTreatments);
 
 	const keys = $derived(
 		groupedTreatments
@@ -58,28 +58,31 @@
 		Detail
 	</div>
 	<div
-		class="sticky top-0 z-10 bg-neutral-200 px-2 py-1 font-semibold uppercase"
+		class="sticky top-0 z-10 flex items-center gap-1 bg-neutral-200 px-2 py-1 font-semibold uppercase"
 		bind:clientWidth={visWidth}
 	>
-		Events
+		<div>Events</div>
+		<TreatmentTableEventsColumnInfo {aggregationLevel} />
 	</div>
 	{#each filteredGroupedTreatments as [category, detailAndEvents]}
 		<div
 			style:grid-row={`span ${detailAndEvents.length}`}
-			class="flex items-center bg-white px-2 py-1"
+			class="flex items-center overflow-x-auto bg-white px-2 py-1 whitespace-nowrap"
 		>
 			{category}
 		</div>
 		{#each detailAndEvents as [detail, events]}
-			<div class="flex items-center bg-white px-2 py-1">
+			{@const aggregatedEvents = getAggregatedTreatmentEvents(
+				events,
+				aggregationLevel,
+				startDate,
+				endDate
+			)}
+			<div class="flex items-center overflow-x-auto bg-white px-2 py-1 whitespace-nowrap">
 				{detail}
 			</div>
 			<div class="flex items-center bg-white">
-				{#if aggregationLevel === 'none'}
-					<TreatmentTimeline {events} width={visWidth} {startDate} {endDate} />
-				{:else}
-					<TreatmentTimeline {events} width={visWidth} {startDate} {endDate} />
-				{/if}
+				<TreatmentTimeline events={aggregatedEvents} width={visWidth} {startDate} {endDate} />
 			</div>
 		{/each}
 	{/each}

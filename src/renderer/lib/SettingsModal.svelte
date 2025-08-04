@@ -16,7 +16,12 @@
 		onUpdateSettings: (newSettings: Settings) => void;
 	} = $props();
 
-	let newSettings: Settings = $derived($state.snapshot(settings));
+	// This makes this value deeply reactive.
+	// https://github.com/sveltejs/svelte/issues/16189
+	const newSettings: Settings = $derived.by(() => {
+		const value = $state($state.snapshot(settings));
+		return value;
+	});
 
 	function onSelectFile(onfulfilled: (path: string) => void) {
 		window.api.selectFilePath().then(onfulfilled);

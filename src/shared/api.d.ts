@@ -71,26 +71,32 @@ export type PROUsersConstructOrders = InternMap<number, PROUserConstructOrders>;
 
 export type TreatmentEvent = SingleTreatmentEvent | RangeTreatmentEvent;
 
+// Used to represent on instance of a treatment that takes place on
+// a specific day.
 export type SingleTreatmentEvent = {
 	kind: 'single';
 	userID: number;
-	category: 'Systemic therapy' | 'Radiation' | 'Surgery';
+	category: 'Oral' | 'Systemic therapy' | 'Radiation' | 'Surgery';
 	detail: string;
 	date: Date;
-	stopDate: null;
-	complete: boolean;
-	extras: Record<string, string>;
+	stopDate: null; // always null, see RangeTreatmentEvent below
+	missed: boolean;
+	extras: { label: string; value: string }[];
 };
 
+// Used to represent a treatment taking placing over multiple days.
+// For example, with oral treatment, the patient may take some medicine
+// daily. We know the start and end dates, but we don't have an event
+// for each time they take it.
 export type RangeTreatmentEvent = {
 	kind: 'range';
 	userID: number;
-	category: 'Oral';
+	category: 'Oral' | 'Systemic therapy' | 'Radiation' | 'Surgery';
 	detail: string;
 	date: Date;
-	stopDate: Date | null;
-	complete: boolean;
-	extras: Record<string, string>;
+	stopDate: Date | null; // null means it's ongoing
+	missed: false; // we don't track if they any
+	extras: [];
 };
 
 export type TreatmentEventsByUser = InternMap<number, TreatmentEvent[]>;

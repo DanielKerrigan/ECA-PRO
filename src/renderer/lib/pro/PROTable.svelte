@@ -12,7 +12,7 @@
 	import PROTableSymptomFilter from './PROTableSymptomFilter.svelte';
 	import PROTableSymptomOrdering from './PROTableSymptomOrdering.svelte';
 	import PROTimelineStackedBars from './PROTimelineStackedBars.svelte';
-	import type { AggregationLevel } from './aggregation';
+	import type { AggregationLevel } from '../aggregation';
 	import { getPROMetaByConstruct } from './symptoms.svelte';
 	import ProSymptomInfo from './PROSymptomInfo.svelte';
 	import Info from '@lucide/svelte/icons/info';
@@ -53,7 +53,7 @@
 
 		<PROTableSymptomFilter
 			{proMetaByKey}
-			keys={Array.from(proKeyToResponses.keys())}
+			allKeys={keys}
 			onFilter={(keys) => {
 				filteredKeys = keys;
 			}}
