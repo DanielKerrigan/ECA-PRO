@@ -2,7 +2,7 @@
 	"name": "eca-pro",
 	"productName": "ECA-PRO",
 	"private": true,
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"main": ".vite/build/main.js",
 	"type": "module",
 	"author": "Daniel Kerrigan",
