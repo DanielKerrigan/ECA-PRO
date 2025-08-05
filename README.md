@@ -14,4 +14,4 @@ Alternatively, if you do not want to use the installer, `ECA-PRO-win32-x64-X.Y.Z
 
 ## Usage
 
-To load data into the app, open the Settings menu. On Windows, this is under `File > Settings`.
+To load data into the app, open the Settings menu. On Windows, this is under `File > Settings`. Select the corresponding PRO and treatment files, click "Save changes", and then close out of the Settings menu. You can then select a patient to view the visualizations.
