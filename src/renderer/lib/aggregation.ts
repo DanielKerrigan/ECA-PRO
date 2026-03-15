@@ -1,5 +1,5 @@
 import { timeWeek, timeMonth } from 'd3-time';
-import type { PROResponse, RangeTreatmentEvent, TreatmentEvent } from '../../shared/api';
+import type { ProResponse, RangeTreatmentEvent, TreatmentEvent } from '../../shared/api';
 import { min, max } from '../../shared/utils';
 import {
 	rollup,
@@ -25,7 +25,7 @@ export type AggregatedPROResponses = {
 };
 
 export function getAggregatedPROResponses(
-	responses: PROResponse[],
+	responses: ProResponse[],
 	aggregationLevel: Exclude<AggregationLevel, 'none'>,
 	startDate: Date,
 	endDate: Date

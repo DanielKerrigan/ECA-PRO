@@ -1,23 +1,21 @@
 import type {
 	Data,
 	PROUsersResponses,
-	PROResponse,
 	PROUsersConstructOrders,
-	PROItem,
 	Settings,
 	TreatmentEvent
 } from '../shared/api.js';
-
-import * as fs from 'node:fs/promises';
-import * as d3 from 'd3';
-import { getPROItems, mergePROItems, getPROItemIDToKey } from './pro/proMeta.js';
-import { getPROResponses, groupPROResponses } from './pro/proResponses.js';
+import { getProItems, mergeProItems, getProItemById } from './pro/proMeta.js';
+import { getProResponses, groupPROResponses } from './pro/proResponses.js';
 import { getUsersConstructOrders } from './pro/proSymptomSorting.js';
 import { getRadiationTreatments } from './symptoms/radiation.js';
 import { getOralTreatments } from './symptoms/oral.js';
 import { getSystemicTherapyTreatments } from './symptoms/systemicTherapy.js';
 import { stripBom } from './utils.js';
 import { getSurgeries } from './symptoms/surgery.js';
+
+import * as fs from 'node:fs/promises';
+import * as d3 from 'd3';
 
 export function getData(settings: Settings): Promise<Data> {
 	const promises = [
@@ -41,22 +39,26 @@ export function getData(settings: Settings): Promise<Data> {
 
 		// read PRO META data
 
-		const proItems: PROItem[] =
-			proMetaResult.status === 'fulfilled' ? getPROItems(stripBom(proMetaResult.value)) : [];
-		const proMetaByKey = mergePROItems(proItems);
-		const proItemIDToKey = getPROItemIDToKey(proItems);
+		const defaultFileResult = { rows: [], errors: ['Could not read file'] };
+
+		const proItems =
+			proMetaResult.status === 'fulfilled'
+				? getProItems(stripBom(proMetaResult.value))
+				: defaultFileResult;
+		const proMetaById = getProItemById(proItems.rows);
+		const proMetaByKey = mergeProItems(proItems.rows);
 
 		// read PRO responses
 
-		const allProReponses: PROResponse[] =
+		const allProReponses =
 			proDataResult.status === 'fulfilled'
-				? getPROResponses(stripBom(proDataResult.value), proMetaByKey, proItemIDToKey)
-				: [];
-		const proUsersResponses: PROUsersResponses = groupPROResponses(allProReponses);
+				? getProResponses(stripBom(proDataResult.value), proMetaByKey, proItemIdToKey)
+				: defaultFileResult;
+		const proUsersResponses: PROUsersResponses = groupPROResponses(allProReponses.rows);
 
 		const proUsersConstructOrders: PROUsersConstructOrders = getUsersConstructOrders(
 			proMetaByKey,
-			allProReponses
+			allProReponses.rows
 		);
 
 		// read treatment data
@@ -64,33 +66,47 @@ export function getData(settings: Settings): Promise<Data> {
 		const radiationTreatmentEvents =
 			radiationResult.status === 'fulfilled'
 				? getRadiationTreatments(stripBom(radiationResult.value))
-				: [];
+				: defaultFileResult;
 
 		const systemicTherapyTreatmentEvents =
 			systemicTherapyResult.status === 'fulfilled'
 				? getSystemicTherapyTreatments(stripBom(systemicTherapyResult.value))
-				: [];
+				: defaultFileResult;
 
 		const surgeryEvents =
-			surgeryResult.status === 'fulfilled' ? getSurgeries(stripBom(surgeryResult.value)) : [];
+			surgeryResult.status === 'fulfilled'
+				? getSurgeries(stripBom(surgeryResult.value))
+				: defaultFileResult;
 
 		const oralTreatmentEvents =
-			oralResult.status === 'fulfilled' ? getOralTreatments(stripBom(oralResult.value)) : [];
+			oralResult.status === 'fulfilled'
+				? getOralTreatments(stripBom(oralResult.value))
+				: defaultFileResult;
 
 		const treatmentEvents = ([] as TreatmentEvent[]).concat(
-			radiationTreatmentEvents,
-			systemicTherapyTreatmentEvents,
-			surgeryEvents,
-			oralTreatmentEvents
+			radiationTreatmentEvents.rows,
+			systemicTherapyTreatmentEvents.rows,
+			surgeryEvents.rows,
+			oralTreatmentEvents.rows
 		);
 
-		const treatmentEventsByUser = d3.group(treatmentEvents, (d) => d.userID);
+		const treatmentEventsByUser = d3.group(treatmentEvents, (d) => d.userId);
 
-		return {
+		const result = {
 			proMetaByKey,
 			proUsersResponses,
 			proUsersConstructOrders,
-			treatmentEventsByUser
+			treatmentEventsByUser,
+			errors: {
+				proMeta: proItems.errors,
+				proData: allProReponses.errors,
+				radiation: radiationTreatmentEvents.errors,
+				systemicTherapy: systemicTherapyTreatmentEvents.errors,
+				oral: oralTreatmentEvents.errors,
+				surgery: surgeryEvents.errors
+			}
 		};
+
+		return result;
 	});
 }

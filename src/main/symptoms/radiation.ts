@@ -1,46 +1,67 @@
 import * as d3 from 'd3';
-import { SingleTreatmentEvent } from '../../shared/api.js';
+import { z } from 'zod';
+import { FileResults, SingleTreatmentEvent } from '../../shared/api.js';
+import { exampleDate, getFileData, zodDate, zodInteger, zodNonEmptyString } from '../utils.js';
 
-export function getRadiationTreatments(contents: string): SingleTreatmentEvent[] {
-	const rows = parseRows(contents);
-	return rows;
+export function getRadiationSchema(
+	parsers: ((dateString: string) => Date | null)[],
+	exampleDateStrings: string[]
+): z.ZodType<SingleTreatmentEvent> {
+	const Schema = z
+		.object({
+			'ECA ID': zodInteger('ECA ID'),
+			'Treatment site': zodNonEmptyString('Treatment site'),
+			'Date of radiation appointment': zodDate(
+				'Date of radiation appointment',
+				parsers,
+				exampleDateStrings
+			),
+			'Total radiation dose received on this date': z.string().trim(),
+			'Total number of radiation fractions received on this date': z.string().trim(),
+			'Total radiation dose planned': zodNonEmptyString('Total radiation dose planned'),
+			'Total number of radiation fractions planned': zodNonEmptyString(
+				'Total number of radiation fractions planned'
+			)
+		})
+		.transform((d): SingleTreatmentEvent => {
+			const detail = `${d['Total radiation dose planned']} Gy in ${d['Total number of radiation fractions planned']} fx to ${d['Treatment site']}`;
+
+			const doseReceived = d['Total radiation dose received on this date'];
+			const fxReceived = d['Total number of radiation fractions received on this date'];
+
+			const missed = doseReceived === '' && fxReceived === '';
+
+			const extras = missed
+				? []
+				: [
+						{ label: 'Total radiation dose received on this date', value: doseReceived },
+						{
+							label: 'Total number of radiation fractions received on this date',
+							value: fxReceived
+						}
+					];
+
+			return {
+				kind: 'single',
+				userId: d['ECA ID'],
+				category: 'Radiation',
+				detail,
+				date: d['Date of radiation appointment'],
+				stopDate: null,
+				missed,
+				extras
+			};
+		});
+
+	return Schema;
 }
 
-function parseRows(contents: string): SingleTreatmentEvent[] {
-	const parseDate = d3.timeParse('%-m/%-d/%Y');
+export function getRadiationTreatments(contents: string): FileResults<SingleTreatmentEvent> {
+	const specifiers = ['%-m/%-d/%Y'];
+	const parsers = specifiers.map((specifier) => d3.timeParse(specifier));
+	const exampleDateStrings = specifiers.map((specifier) => d3.timeFormat(specifier)(exampleDate));
 
-	const category = 'Radiation';
+	const Schema = getRadiationSchema(parsers, exampleDateStrings);
 
-	return d3.csvParse(contents).map((d) => {
-		const detail = `${d['Total radiation dose planned']} Gy in ${d['Total number of radiation fractions planned']} fx to ${d['Treatment site']}`;
-
-		const doseReceived = d['Total radiation dose received on this date'];
-		const fxReceived = d['Total number of radiation fractions received on this date'];
-
-		const missed = doseReceived === '' && fxReceived === '';
-
-		const extras = missed
-			? []
-			: [
-					{ label: 'Total radiation dose received on this date', value: doseReceived },
-					{
-						label: 'Total number of radiation fractions received on this date',
-						value: fxReceived
-					}
-				];
-
-		const event: SingleTreatmentEvent = {
-			kind: 'single',
-			userID: +d['ECA ID'],
-			category,
-			detail,
-			// TODO: make sure date parsed correctly
-			date: parseDate(d['Date of radiation appointment'])!,
-			stopDate: null,
-			missed,
-			extras
-		};
-
-		return event;
-	});
+	return getFileData(contents, Schema);
 }

@@ -1,12 +1,12 @@
 import { ascending, InternMap, rollup, rollups } from 'd3-array';
-import type { PROMetaByKey, MergedPROItem } from '../../../shared/api';
+import type { ProItemByKey, MergedProItem } from '../../../shared/api';
 
 // grouping
 
-export type PROMetaByConstruct = InternMap<string, MergedPROItem[]>;
+export type PROMetaByConstruct = InternMap<string, MergedProItem[]>;
 
 export function getPROMetaByConstruct(
-	proMetaByKey: PROMetaByKey,
+	proMetaByKey: ProItemByKey,
 	keys: string[]
 ): PROMetaByConstruct {
 	const items = keys.map((key: string) => proMetaByKey.get(key)).filter((d) => d !== undefined);
@@ -18,10 +18,10 @@ export function getPROMetaByConstruct(
 	);
 }
 
-export type PROMetaByCategoryAndConstruct = [string, [string, MergedPROItem[]][]][];
+export type PROMetaByCategoryAndConstruct = [string, [string, MergedProItem[]][]][];
 
 export function getPROMetaByCategoryAndConstruct(
-	proMetaByKey: PROMetaByKey,
+	proMetaByKey: ProItemByKey,
 	keys: string[]
 ): PROMetaByCategoryAndConstruct {
 	const items = keys.map((key: string) => proMetaByKey.get(key)).filter((d) => d !== undefined);

@@ -4,7 +4,7 @@
 		PROKeyToResponses,
 		PROUserConstructOrders,
 		PROConstructOrderMethod,
-		PROMetaByKey
+		ProItemByKey
 	} from '../../../shared/api';
 	import PROTimeline from './PROTimeline.svelte';
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
@@ -26,7 +26,7 @@
 		aggregationLevel,
 		normalizeBars
 	}: {
-		proMetaByKey: PROMetaByKey;
+		proMetaByKey: ProItemByKey;
 		proKeyToResponses: PROKeyToResponses;
 		proPatientConstructs: PROUserConstructOrders;
 		startDate: Date;

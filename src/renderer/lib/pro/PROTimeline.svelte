@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { PROResponse, MergedPROItem } from '../../../shared/api';
+	import type { ProResponse, MergedProItem } from '../../../shared/api';
 	import { scaleTime, scaleLinear } from 'd3-scale';
 	import type { ScaleTime, ScaleLinear } from 'd3-scale';
 	import { getPROColor, scaleCanvas } from '$lib/vis-utils';
@@ -18,8 +18,8 @@
 		marginRight = 24,
 		marginBottom = 24
 	}: {
-		responses: PROResponse[];
-		item: MergedPROItem;
+		responses: ProResponse[];
+		item: MergedProItem;
 		startDate: Date;
 		endDate: Date;
 		width: number;
@@ -70,7 +70,7 @@
 
 	function draw(
 		ctx: CanvasRenderingContext2D,
-		responses: PROResponse[],
+		responses: ProResponse[],
 		x: ScaleTime<number, number>,
 		y: ScaleLinear<number, number>,
 		barWidth: number,

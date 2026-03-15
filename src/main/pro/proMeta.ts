@@ -1,64 +1,103 @@
-import type { PROItem, PROMetaByKey } from '../../shared/api.js';
+import type { ProItem, FileResults, ProItemByKey } from '../../shared/api.js';
+import { getFileData, zodInteger, zodNonEmptyString } from '../utils.js';
+import {
+	notApplicable,
+	notSexuallyActive,
+	preferNotToSay,
+	specialTextToValue
+} from '../../shared/utils.js';
 
 import * as d3 from 'd3';
+import { z } from 'zod';
 
-export function getPROItems(metaContents: string): PROItem[] {
-	return d3
-		.csvParse(metaContents, (d) => {
-			const responseItemStrings = d.ResponseItemValues.split('|').map((s) => s.trim());
-			const numResponses = responseItemStrings.length;
+export function getProItemSchema(): z.ZodType<ProItem> {
+	const Schema = z
+		.object({
+			ItemID: zodInteger('ItemID'),
+			Item: zodNonEmptyString('Item'),
+			ConstructName: zodNonEmptyString('ConstructName'),
+			ResponseItemType: zodNonEmptyString('ResponseItemType'),
+			ResponseItemValues: z
+				.string()
+				.transform((d) => d.split('|').map((s) => s.trim()))
+				.pipe(
+					z
+						.array(z.string().min(1, 'Values in "ReponseItemValues" cannot be empty'))
+						.min(3, '"ResponseItemValues" must have at least three values')
+						.refine(
+							(v) => v[v.length - 1] === preferNotToSay,
+							`Last value in "ReponseItemValues" must be "${preferNotToSay}"`
+						)
+						.refine((v) => {
+							const naIndex = v.indexOf(notApplicable);
+							return naIndex === -1 || naIndex === v.length - 2;
+						}, `Second to last value in "ReponseItemValues" is expected to be "${notApplicable}"`)
+						.refine((v) => {
+							const naIndex = v.indexOf(notSexuallyActive);
+							return naIndex === -1 || naIndex === v.length - 2;
+						}, `Second to last value in "ReponseItemValues" is expected to be "${notSexuallyActive}"`)
+				),
+			BankName: zodNonEmptyString('BankName'),
+			CategoryName: zodNonEmptyString('CategoryName')
+		})
+		.transform((d): ProItem => {
+			const I = d3.range(d.ResponseItemValues.length);
+			const values = d.ResponseItemValues.map((s, i) => specialTextToValue[s] ?? i);
+			const maxValue = Math.max(...values);
+			const normalizedValues = values.map((v) => (v < 0 ? v : v / maxValue));
 
-			const responseItemValues = d3.range(numResponses);
-
-			// Normalize the response value between 0 to 1, with "Prefer not to say" as -1.
-			// This assumes that in responseItemStrings, the values go from
-			// best to worst with "Prefer not to say" at the end.
-
-			const normalizedResponseItemValues = [
-				...responseItemValues.slice(0, -1).map((d) => d / (numResponses - 2)),
-				-1
-			];
+			const textToValue = new Map(I.map((i) => [d.ResponseItemValues[i], values[i]]));
+			const valueToNormalizedValue = new Map(I.map((i) => [values[i], normalizedValues[i]]));
 
 			return {
 				key: `${d.ConstructName}_${d.ResponseItemType}`,
-				itemID: +d.ItemID,
+				itemId: d.ItemID,
 				item: d.Item,
 				constructName: d.ConstructName,
 				responseItemType: d.ResponseItemType,
-				responseItemStrings,
-				responseItemValues,
-				normalizedResponseItemValues,
 				bankName: d.BankName,
-				categoryName: d.CategoryName
+				categoryName: d.CategoryName,
+				textToValue,
+				valueToNormalizedValue
 			};
-		})
-		.filter((d) => d.item !== '');
+		});
+
+	return Schema;
 }
 
-export function getPROItemIDToKey(proItems: PROItem[]): Map<number, string> {
-	return new Map(proItems.map((d) => [d.itemID, d.key]));
+export function getProItems(contents: string): FileResults<ProItem> {
+	const Schema = getProItemSchema();
+	return getFileData(contents, Schema);
 }
 
-export function mergePROItems(proItems: PROItem[]): PROMetaByKey {
+export function getProItemById(proItems: ProItem[]): Map<number, ProItem> {
+	return new Map(proItems.map((d) => [d.itemId, d]));
+}
+
+export function getProItemIdToKey(proItems: ProItem[]): Map<number, string> {
+	return new Map(proItems.map((d) => [d.itemId, d.key]));
+}
+
+export function mergeProItems(proItems: ProItem[]): ProItemByKey {
 	return d3.rollup(
 		proItems,
 		(g) => {
-			const itemIDs = g.map((d) => d.itemID);
-			const items = g.map((d) => d.key);
+			const itemIds = g.map((d) => d.itemId);
+			const items = g.map((d) => d.item);
 
-			const first = g[0];
+			const i = d3.greatestIndex(itemIds)!;
+			const item = g[i];
 
 			return {
-				key: first.key,
-				itemIDs,
+				key: item.key,
+				itemIds: itemIds,
 				items,
-				constructName: first.constructName,
-				responseItemType: first.responseItemType,
-				responseItemStrings: first.responseItemStrings,
-				responseItemValues: first.responseItemValues,
-				normalizedResponseItemValues: first.normalizedResponseItemValues,
-				bankName: first.bankName,
-				categoryName: first.categoryName
+				constructName: item.constructName,
+				responseItemType: item.responseItemType,
+				bankName: item.bankName,
+				categoryName: item.categoryName,
+				textToValue: item.textToValue,
+				valueToNormalizedValue: item.valueToNormalizedValue
 			};
 		},
 		(d) => d.key

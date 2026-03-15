@@ -1,11 +1,11 @@
 <script lang="ts">
-	import type { MergedPROItem } from '../../../shared/api';
+	import type { MergedProItem } from '../../../shared/api';
 	import { getPROColor } from '$lib/vis-utils';
 
 	let {
 		item
 	}: {
-		item: MergedPROItem;
+		item: MergedProItem;
 	} = $props();
 
 	const I = $derived([

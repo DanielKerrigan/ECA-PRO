@@ -11,43 +11,50 @@ export type Settings = {
 	surgeryPath: string;
 };
 
+// File reading
+
+export type FileResults<T> = {
+	rows: T[];
+	errors: string[];
+};
+
 // PRO
 
 // Meta
 
-export type PROItem = {
+export type ProItem = {
 	key: string;
-	itemID: number;
+	itemId: number;
 	item: string;
 	constructName: string;
 	responseItemType: string;
-	responseItemStrings: string[];
-	responseItemValues: number[];
-	normalizedResponseItemValues: number[];
 	bankName: string;
 	categoryName: string;
+	textToValue: Map<string, number>;
+	valueToNormalizedValue: Map<number, number>;
 };
 
-export type MergedPROItem = Omit<PROItem, 'itemID' | 'item'> & {
-	itemIDs: number[];
+export type MergedProItem = Omit<ProItem, 'itemId' | 'item'> & {
+	itemIds: number[];
 	items: string[];
 };
 
-export type PROMetaByKey = InternMap<string, MergedPROItem>;
+export type ProItemByKey = InternMap<string, MergedProItem>;
 
 // Responses
 
-export type PROResponse = {
-	userID: number;
+export type ProResponse = {
+	responseId: number;
+	userId: number;
 	dateTime: Date;
 	key: string;
-	itemID: number;
+	itemId: number;
 	responseValue: number;
 	normalizedResponseValue: number;
 	responseText: string;
 };
 
-export type PROKeyToResponses = InternMap<string, PROResponse[]>;
+export type PROKeyToResponses = InternMap<string, ProResponse[]>;
 export type PROUsersResponses = InternMap<number, PROKeyToResponses>;
 
 // Constructs
@@ -75,7 +82,7 @@ export type TreatmentEvent = SingleTreatmentEvent | RangeTreatmentEvent;
 // a specific day.
 export type SingleTreatmentEvent = {
 	kind: 'single';
-	userID: number;
+	userId: number;
 	category: 'Oral' | 'Systemic therapy' | 'Radiation' | 'Surgery';
 	detail: string;
 	date: Date;
@@ -90,7 +97,7 @@ export type SingleTreatmentEvent = {
 // for each time they take it.
 export type RangeTreatmentEvent = {
 	kind: 'range';
-	userID: number;
+	userId: number;
 	category: 'Oral' | 'Systemic therapy' | 'Radiation' | 'Surgery';
 	detail: string;
 	date: Date;
@@ -109,10 +116,18 @@ export type GroupedTreatments = [
 // preload API
 
 export type Data = {
-	proMetaByKey: PROMetaByKey;
+	proMetaByKey: ProItemByKey;
 	proUsersResponses: PROUsersResponses;
 	proUsersConstructOrders: PROUsersConstructOrders;
 	treatmentEventsByUser: TreatmentEventsByUser;
+	errors: {
+		proMeta: string[];
+		proData: string[];
+		radiation: string[];
+		systemicTherapy: string[];
+		oral: string[];
+		surgery: string[];
+	};
 };
 
 export type ElectronAPI = {

@@ -1,7 +1,7 @@
 import type {
-	MergedPROItem,
-	PROMetaByKey,
-	PROResponse,
+	MergedProItem,
+	ProItemByKey,
+	ProResponse,
 	PROUserConstructOrders,
 	PROUsersConstructOrders
 } from '../../shared/api.js';
@@ -28,8 +28,8 @@ type ConstructInfo = {
 };
 
 function getConstructInfo(
-	constructResponses: PROResponse[],
-	proMetaByKey: PROMetaByKey,
+	constructResponses: ProResponse[],
+	proMetaByKey: ProItemByKey,
 	recentStart: Date,
 	recentEnd: Date
 ): ConstructInfo {
@@ -65,7 +65,7 @@ function getConstructInfo(
 					meanNormalizedValue
 				};
 			},
-			(d) => d.itemID
+			(d) => d.itemId
 		)
 		.map((d) => d[1])
 		.sort(compareRecentSeverity)[0];
@@ -79,8 +79,8 @@ function getConstructInfo(
 }
 
 function getUserConstructOrders(
-	allUserResponses: PROResponse[],
-	proMetaByKey: PROMetaByKey
+	allUserResponses: ProResponse[],
+	proMetaByKey: ProItemByKey
 ): PROUserConstructOrders {
 	// TODO: better handle dates being undefined
 	const [minDate, maxDate] = d3.extent(allUserResponses, (d) => d.dateTime) as [Date, Date];
@@ -126,12 +126,12 @@ function getUserConstructOrders(
  * for each user.
  */
 export function getUsersConstructOrders(
-	proMetaByKey: PROMetaByKey,
-	allProReponses: PROResponse[]
+	proMetaByKey: ProItemByKey,
+	allProReponses: ProResponse[]
 ): PROUsersConstructOrders {
 	return d3.rollup(
 		allProReponses,
 		(allUserResponses) => getUserConstructOrders(allUserResponses, proMetaByKey),
-		(d) => d.userID
+		(d) => d.userId
 	);
 }

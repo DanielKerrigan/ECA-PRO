@@ -12,10 +12,12 @@ export function max<T>(a: T, b: T): T {
 	return b;
 }
 
-export function parseNumber(x: string): number | null {
-	if (x === '') {
-		return null;
-	}
+export const preferNotToSay = 'Prefer not to say';
+export const notApplicable = 'Not applicable';
+export const notSexuallyActive = 'Not sexually active';
 
-	return +x;
-}
+export const specialTextToValue: Record<string, number> = {
+	[preferNotToSay]: -100,
+	[notApplicable]: -101,
+	[notSexuallyActive]: -102
+};

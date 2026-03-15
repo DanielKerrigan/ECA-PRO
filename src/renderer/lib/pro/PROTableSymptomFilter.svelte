@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as Popover from '$lib/components/ui/popover/index.js';
-	import type { PROMetaByKey } from '../../../shared/api';
+	import type { ProItemByKey } from '../../../shared/api';
 	import { cn } from '../utils';
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
 	import Filter from '@lucide/svelte/icons/filter';
@@ -15,7 +15,7 @@
 		allKeys,
 		onFilter
 	}: {
-		proMetaByKey: PROMetaByKey;
+		proMetaByKey: ProItemByKey;
 		allKeys: string[];
 		onFilter: (keys: string[]) => void;
 	} = $props();

@@ -1,31 +1,59 @@
 import * as d3 from 'd3';
-import { RangeTreatmentEvent } from '../../shared/api.js';
+import { z } from 'zod';
+import { FileResults, RangeTreatmentEvent } from '../../shared/api.js';
+import {
+	exampleDate,
+	getFileData,
+	zodDate,
+	zodInteger,
+	zodNonEmptyString,
+	zodOptionalDate
+} from '../utils.js';
 
-export function getOralTreatments(contents: string): RangeTreatmentEvent[] {
-	const rows = parseRows(contents);
-	return rows;
+export function getOralSchema(
+	parsers: ((dateString: string) => Date | null)[],
+	exampleDateStrings: string[]
+): z.ZodType<RangeTreatmentEvent> {
+	const Schema = z
+		.object({
+			'ECA ID': zodInteger('ECA ID'),
+			'Event Name': z.string().trim(),
+			'Name of oral therapy medication': zodNonEmptyString('Name of oral therapy medication'),
+			'Start date of oral therapy medication': zodDate(
+				'Start date of oral therapy medication',
+				parsers,
+				exampleDateStrings
+			),
+			'Date the oral therapy was discontinued': zodOptionalDate(
+				'Date the oral therapy was discontinued',
+				parsers,
+				exampleDateStrings
+			)
+		})
+		.transform((d): RangeTreatmentEvent => {
+			const detail = d['Name of oral therapy medication'];
+
+			return {
+				userId: d['ECA ID'],
+				kind: 'range',
+				category: 'Oral',
+				detail,
+				date: d['Start date of oral therapy medication'],
+				stopDate: d['Date the oral therapy was discontinued'],
+				missed: false,
+				extras: []
+			};
+		});
+
+	return Schema;
 }
 
-function parseRows(contents: string): RangeTreatmentEvent[] {
-	const parseDate = d3.timeParse('%-m/%-d/%Y');
+export function getOralTreatments(contents: string): FileResults<RangeTreatmentEvent> {
+	const specifiers = ['%-m/%-d/%Y'];
+	const parsers = specifiers.map((specifier) => d3.timeParse(specifier));
+	const exampleDateStrings = specifiers.map((specifier) => d3.timeFormat(specifier)(exampleDate));
 
-	const category = 'Oral';
+	const Schema = getOralSchema(parsers, exampleDateStrings);
 
-	return d3.csvParse(contents).map((d) => {
-		const detail = d['Name of oral therapy medication'];
-
-		const event: RangeTreatmentEvent = {
-			userID: +d['ECA ID'],
-			kind: 'range',
-			category,
-			detail,
-			// TODO: make sure date parsed correctly
-			date: parseDate(d['Start date of oral therapy medication'])!,
-			stopDate: parseDate(d['Date the oral therapy was discontinued']),
-			missed: false,
-			extras: []
-		};
-
-		return event;
-	});
+	return getFileData(contents, Schema);
 }

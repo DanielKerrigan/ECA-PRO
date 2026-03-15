@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { PROResponse, MergedPROItem } from '../../../shared/api';
+	import type { ProResponse, MergedProItem } from '../../../shared/api';
 	import { max } from 'd3-array';
 	import { scaleTime, scaleLinear } from 'd3-scale';
 	import type { ScaleTime, ScaleLinear } from 'd3-scale';
@@ -25,8 +25,8 @@
 		marginRight = 24,
 		marginBottom = 24
 	}: {
-		responses: PROResponse[];
-		item: MergedPROItem;
+		responses: ProResponse[];
+		item: MergedProItem;
 		aggregationLevel: Exclude<AggregationLevel, 'none'>;
 		startDate: Date;
 		endDate: Date;
