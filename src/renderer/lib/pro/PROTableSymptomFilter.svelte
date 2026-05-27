@@ -7,7 +7,7 @@
 	import CheckboxFilter from '$lib/components/ui/checkbox-filter/CheckboxFilter.svelte';
 	import { ParentChecks } from '$lib/components/ui/checkbox-filter/index.svelte';
 	import type { CheckboxFilterData } from '$lib/components/ui/checkbox-filter/index.svelte';
-	import { getPROMetaByCategoryAndConstruct } from './symptoms.svelte';
+	import { getProMetaByCategoryAndConstruct } from './symptoms.svelte';
 	import { ascending } from 'd3-array';
 
 	let {
@@ -21,7 +21,7 @@
 	} = $props();
 
 	const proMetaByCategoryConstruct = $derived(
-		getPROMetaByCategoryAndConstruct(proMetaByKey, allKeys)
+		getProMetaByCategoryAndConstruct(proMetaByKey, allKeys)
 	);
 
 	const data: CheckboxFilterData = $derived(

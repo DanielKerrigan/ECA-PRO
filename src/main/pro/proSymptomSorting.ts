@@ -2,8 +2,8 @@ import type {
 	MergedProItem,
 	ProItemByKey,
 	ProResponse,
-	PROUserConstructOrders,
-	PROUsersConstructOrders
+	ProUserConstructOrders,
+	ProUsersConstructOrders
 } from '../../shared/api.js';
 
 import * as d3 from 'd3';
@@ -81,7 +81,7 @@ function getConstructInfo(
 function getUserConstructOrders(
 	allUserResponses: ProResponse[],
 	proMetaByKey: ProItemByKey
-): PROUserConstructOrders {
+): ProUserConstructOrders {
 	// TODO: better handle dates being undefined
 	const [minDate, maxDate] = d3.extent(allUserResponses, (d) => d.dateTime) as [Date, Date];
 	const recentStart = max(minDate, d3.timeDay.floor(d3.timeWeek.offset(maxDate, -1)));
@@ -128,7 +128,7 @@ function getUserConstructOrders(
 export function getUsersConstructOrders(
 	proMetaByKey: ProItemByKey,
 	allProReponses: ProResponse[]
-): PROUsersConstructOrders {
+): ProUsersConstructOrders {
 	return d3.rollup(
 		allProReponses,
 		(allUserResponses) => getUserConstructOrders(allUserResponses, proMetaByKey),

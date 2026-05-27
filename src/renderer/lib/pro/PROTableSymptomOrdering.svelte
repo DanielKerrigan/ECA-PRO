@@ -4,7 +4,7 @@
 	import { cn } from '../utils';
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
 	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
-	import type { PROConstructOrderMethod, PROUserConstructOrders } from '../../../shared/api';
+	import type { ProConstructOrderMethod, ProUserConstructOrders } from '../../../shared/api';
 	import { timeFormat } from 'd3-time-format';
 	import ArrowDownUp from '@lucide/svelte/icons/arrow-down-up';
 
@@ -13,9 +13,9 @@
 		proUserConstructOrders,
 		onChangeOrderMethod
 	}: {
-		orderMethod: PROConstructOrderMethod;
-		proUserConstructOrders: PROUserConstructOrders;
-		onChangeOrderMethod: (method: PROConstructOrderMethod) => void;
+		orderMethod: ProConstructOrderMethod;
+		proUserConstructOrders: ProUserConstructOrders;
+		onChangeOrderMethod: (method: ProConstructOrderMethod) => void;
 	} = $props();
 
 	const fmt = timeFormat('%x');
@@ -23,7 +23,7 @@
 	const startDateStr = fmt(proUserConstructOrders.severity.startDate);
 	const endDateStr = fmt(proUserConstructOrders.severity.endDate);
 
-	type Options = { value: PROConstructOrderMethod; display: string }[];
+	type Options = { value: ProConstructOrderMethod; display: string }[];
 	const options: Options = $derived([
 		{ value: 'category', display: 'Category' },
 		{
@@ -42,7 +42,7 @@
 			<div class="text-lg font-bold">Symptom Sorting</div>
 			<RadioGroup.Root
 				value={orderMethod}
-				onValueChange={(v) => onChangeOrderMethod(v as PROConstructOrderMethod)}
+				onValueChange={(v) => onChangeOrderMethod(v as ProConstructOrderMethod)}
 			>
 				{#each options as { value, display }}
 					<div class="flex items-center gap-2">

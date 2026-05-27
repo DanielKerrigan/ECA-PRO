@@ -1,3 +1,9 @@
+import {
+	preferNotToSay,
+	notApplicable,
+	notSexuallyActive,
+	specialTextToValue
+} from '../../shared/utils.js';
 import { format } from 'd3-format';
 import { interpolateOrRd } from 'd3-scale-chromatic';
 
@@ -75,11 +81,16 @@ export function fitString(ctx: CanvasRenderingContext2D, str: string, maxWidth: 
 	return str.substring(0, index) + ellipsis;
 }
 
-export function getPROColor(normalizedResponseValue: number): string {
+export function getProColor(normalizedResponseValue: number): string {
 	if (normalizedResponseValue === 0) {
 		return '#07b63f';
-	} else if (normalizedResponseValue === -1) {
+	} else if (normalizedResponseValue === specialTextToValue[preferNotToSay]) {
 		return '#737373';
+	} else if (
+		normalizedResponseValue === specialTextToValue[notApplicable] ||
+		normalizedResponseValue === specialTextToValue[notSexuallyActive]
+	) {
+		return '#404040';
 	} else {
 		return interpolateOrRd(normalizedResponseValue);
 	}

@@ -1,4 +1,4 @@
-import type { FileResults, ProResponse, PROUsersResponses, ProItem } from '../../shared/api.js';
+import type { FileResults, ProResponse, ProUsersResponses, ProItem } from '../../shared/api.js';
 import { exampleDate, getFileData, zodDate, zodInteger, zodNonEmptyString } from '../utils.js';
 
 import { z } from 'zod';
@@ -11,12 +11,12 @@ export function getProResponseSchema(
 ) {
 	const Schema = z
 		.object({
-			responseID: zodInteger('responseID'),
-			UserID: zodInteger('UserID'),
-			DateTime: zodDate('DateTime', parsers, exampleDateStrings),
-			ItemID: zodInteger('ItemID'),
-			ResponseValue: zodInteger('ResponseValue'),
-			ResponseText: zodNonEmptyString('ResponseText')
+			responseID: zodInteger(),
+			UserID: zodInteger(),
+			DateTime: zodDate(parsers, exampleDateStrings),
+			ItemID: zodInteger(),
+			ResponseValue: zodInteger(),
+			ResponseText: zodNonEmptyString()
 		})
 		.refine((v) => proItemById.has(v.ItemID), `Cannot find ItemID in the PRO items metadata.`)
 		.superRefine((val, ctx) => {
@@ -60,6 +60,7 @@ export function getProResponseSchema(
 			const item = proItemById.get(d.ItemID)!;
 
 			const responseValue = item.textToValue.get(d.ResponseText) ?? d.ResponseValue;
+			// TODO: handle this better
 			const normalizedResponseValue = item.valueToNormalizedValue.get(responseValue) ?? -1;
 
 			return {
@@ -97,7 +98,7 @@ export function getProResponses(
 	};
 }
 
-export function groupPROResponses(responses: ProResponse[]): PROUsersResponses {
+export function groupProResponses(responses: ProResponse[]): ProUsersResponses {
 	return d3.rollup(
 		responses,
 		(g) => g.sort((a, b) => d3.ascending(a.dateTime, b.dateTime)),

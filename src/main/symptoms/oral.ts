@@ -7,7 +7,8 @@ import {
 	zodDate,
 	zodInteger,
 	zodNonEmptyString,
-	zodOptionalDate
+	zodOptionalDate,
+	zodRequiredString
 } from '../utils.js';
 
 export function getOralSchema(
@@ -16,19 +17,11 @@ export function getOralSchema(
 ): z.ZodType<RangeTreatmentEvent> {
 	const Schema = z
 		.object({
-			'ECA ID': zodInteger('ECA ID'),
-			'Event Name': z.string().trim(),
-			'Name of oral therapy medication': zodNonEmptyString('Name of oral therapy medication'),
-			'Start date of oral therapy medication': zodDate(
-				'Start date of oral therapy medication',
-				parsers,
-				exampleDateStrings
-			),
-			'Date the oral therapy was discontinued': zodOptionalDate(
-				'Date the oral therapy was discontinued',
-				parsers,
-				exampleDateStrings
-			)
+			'ECA ID': zodInteger(),
+			'Event Name': zodRequiredString(),
+			'Name of oral therapy medication': zodNonEmptyString(),
+			'Start date of oral therapy medication': zodDate(parsers, exampleDateStrings),
+			'Date the oral therapy was discontinued': zodOptionalDate(parsers, exampleDateStrings)
 		})
 		.transform((d): RangeTreatmentEvent => {
 			const detail = d['Name of oral therapy medication'];

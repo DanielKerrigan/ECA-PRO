@@ -13,9 +13,14 @@ export type Settings = {
 
 // File reading
 
+export type RowError<T> = {
+	row: number;
+	errors: z.ZodFlattenedError<z.ZodType<T>>;
+};
+
 export type FileResults<T> = {
 	rows: T[];
-	errors: string[];
+	errors: RowError<T>[];
 };
 
 // PRO
@@ -54,14 +59,14 @@ export type ProResponse = {
 	responseText: string;
 };
 
-export type PROKeyToResponses = InternMap<string, ProResponse[]>;
-export type PROUsersResponses = InternMap<number, PROKeyToResponses>;
+export type ProKeyToResponses = InternMap<string, ProResponse[]>;
+export type ProUsersResponses = InternMap<number, ProKeyToResponses>;
 
 // Constructs
 
-export type PROConstructOrderMethod = 'category' | 'severity';
+export type ProConstructOrderMethod = 'category' | 'severity';
 
-export type PROUserConstructOrders = {
+export type ProUserConstructOrders = {
 	category: {
 		order: string[];
 	};
@@ -72,7 +77,7 @@ export type PROUserConstructOrders = {
 	};
 };
 
-export type PROUsersConstructOrders = InternMap<number, PROUserConstructOrders>;
+export type ProUsersConstructOrders = InternMap<number, ProUserConstructOrders>;
 
 // Treatments
 
@@ -102,7 +107,7 @@ export type RangeTreatmentEvent = {
 	detail: string;
 	date: Date;
 	stopDate: Date | null; // null means it's ongoing
-	missed: false; // we don't track if they any
+	missed: false; // we don't track if they miss any
 	extras: [];
 };
 
@@ -117,16 +122,16 @@ export type GroupedTreatments = [
 
 export type Data = {
 	proMetaByKey: ProItemByKey;
-	proUsersResponses: PROUsersResponses;
-	proUsersConstructOrders: PROUsersConstructOrders;
+	proUsersResponses: ProUsersResponses;
+	proUsersConstructOrders: ProUsersConstructOrders;
 	treatmentEventsByUser: TreatmentEventsByUser;
 	errors: {
-		proMeta: string[];
-		proData: string[];
-		radiation: string[];
-		systemicTherapy: string[];
-		oral: string[];
-		surgery: string[];
+		proMeta: RowError<ProItem>[];
+		proData: RowError<ProResponse>[];
+		radiation: RowError<SingleTreatmentEvent>[];
+		systemicTherapy: RowError<SingleTreatmentEvent>[];
+		oral: RowError<RangeTreatmentEvent>[];
+		surgery: RowError<SingleTreatmentEvent>[];
 	};
 };
 

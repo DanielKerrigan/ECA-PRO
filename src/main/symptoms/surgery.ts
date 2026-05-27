@@ -1,5 +1,12 @@
 import { FileResults, SingleTreatmentEvent } from '../../shared/api.js';
-import { exampleDate, getFileData, zodDate, zodInteger, zodNonEmptyString } from '../utils.js';
+import {
+	exampleDate,
+	getFileData,
+	zodDate,
+	zodInteger,
+	zodNonEmptyString,
+	zodRequiredString
+} from '../utils.js';
 
 import * as d3 from 'd3';
 import { z } from 'zod';
@@ -10,11 +17,11 @@ export function getSurgerySchema(
 ): z.ZodType<SingleTreatmentEvent> {
 	const Schema = z
 		.object({
-			'ECA ID': zodInteger('ECA ID'),
-			'Event Name': z.string().trim(),
-			'Treatment site': zodNonEmptyString('Treatment site'),
-			'Date of surgery': zodDate('Date of surgery', parsers, exampleDateStrings),
-			'Name of surgery/surgery site': zodNonEmptyString('Name of surgery/surgery site')
+			'ECA ID': zodInteger(),
+			'Event Name': zodRequiredString(),
+			'Treatment site': zodNonEmptyString(),
+			'Date of surgery': zodDate(parsers, exampleDateStrings),
+			'Name of surgery/surgery site': zodNonEmptyString()
 		})
 		.transform((d): SingleTreatmentEvent => {
 			const detail = d['Name of surgery/surgery site'];

@@ -3,12 +3,12 @@ import type { ProItemByKey, MergedProItem } from '../../../shared/api';
 
 // grouping
 
-export type PROMetaByConstruct = InternMap<string, MergedProItem[]>;
+export type ProMetaByConstruct = InternMap<string, MergedProItem[]>;
 
-export function getPROMetaByConstruct(
+export function getProMetaByConstruct(
 	proMetaByKey: ProItemByKey,
 	keys: string[]
-): PROMetaByConstruct {
+): ProMetaByConstruct {
 	const items = keys.map((key: string) => proMetaByKey.get(key)).filter((d) => d !== undefined);
 
 	return rollup(
@@ -18,12 +18,12 @@ export function getPROMetaByConstruct(
 	);
 }
 
-export type PROMetaByCategoryAndConstruct = [string, [string, MergedProItem[]][]][];
+export type ProMetaByCategoryAndConstruct = [string, [string, MergedProItem[]][]][];
 
-export function getPROMetaByCategoryAndConstruct(
+export function getProMetaByCategoryAndConstruct(
 	proMetaByKey: ProItemByKey,
 	keys: string[]
-): PROMetaByCategoryAndConstruct {
+): ProMetaByCategoryAndConstruct {
 	const items = keys.map((key: string) => proMetaByKey.get(key)).filter((d) => d !== undefined);
 
 	return rollups(

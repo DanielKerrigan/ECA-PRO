@@ -1,13 +1,13 @@
 <script lang="ts">
 	import type {
 		Data,
-		PROKeyToResponses,
-		PROUserConstructOrders,
+		ProKeyToResponses,
+		ProUserConstructOrders,
 		TreatmentEvent
 	} from '../../shared/api';
 	import Header from './Header.svelte';
 	import type { AggregationLevel } from './aggregation';
-	import PROTable from './pro/PROTable.svelte';
+	import ProTable from './pro/ProTable.svelte';
 	import { ascending, max, min, extent } from 'd3-array';
 	import { timeDay, timeMonth } from 'd3-time';
 	import TreatmentsTable from './treatments/TreatmentsTable.svelte';
@@ -15,8 +15,8 @@
 	let { data }: { data: Data } = $props();
 
 	let patientID: number | undefined = $state();
-	let patientResponses: PROKeyToResponses | undefined = $state();
-	let proPatientConstructs: PROUserConstructOrders | undefined = $state();
+	let patientResponses: ProKeyToResponses | undefined = $state();
+	let proPatientConstructs: ProUserConstructOrders | undefined = $state();
 	let treatmentEvents: TreatmentEvent[] | undefined = $state();
 	let minDate: Date | undefined = $state();
 	let maxDate: Date | undefined = $state();
@@ -24,6 +24,8 @@
 	let endDate: Date | undefined = $state();
 	let aggregationLevel: AggregationLevel = $state('none');
 	let normalizeBars: boolean = $state(false);
+
+	$effect(() => console.log(data));
 
 	const patientIDs = $derived(Array.from(data.proUsersResponses.keys()).sort(ascending));
 
@@ -109,7 +111,7 @@
 	{/if}
 	{#if patientResponses && proPatientConstructs && startDate && endDate}
 		<div class="min-h-0 flex-1">
-			<PROTable
+			<ProTable
 				proKeyToResponses={patientResponses}
 				proMetaByKey={data.proMetaByKey}
 				{proPatientConstructs}

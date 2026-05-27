@@ -15,21 +15,18 @@ export type AggregationLevel = 'none' | 'weekly' | 'monthly';
 
 export const aggregationLevels: AggregationLevel[] = ['none', 'weekly', 'monthly'];
 
-export type AggregatedPROResponses = {
-	median: number | undefined;
-	min: number | undefined;
-	max: number | undefined;
+export type AggregatedProResponses = {
 	start: Date;
 	end: Date;
 	counts: InternMap<number, number>;
 };
 
-export function getAggregatedPROResponses(
+export function getAggregatedProResponses(
 	responses: ProResponse[],
 	aggregationLevel: Exclude<AggregationLevel, 'none'>,
 	startDate: Date,
 	endDate: Date
-): AggregatedPROResponses[] {
+): AggregatedProResponses[] {
 	const filteredResponses = responses.filter(
 		(response) => response.dateTime >= startDate && response.dateTime <= endDate
 	);
@@ -39,22 +36,17 @@ export function getAggregatedPROResponses(
 	return rollups(
 		filteredResponses,
 		(g) => {
-			const answered = g.filter((d) => d.responseText !== 'Prefer not to say');
-			const medianValue = d3median(answered, (d) => d.responseValue);
-			const minValue = d3min(answered, (d) => d.responseValue);
-			const maxValue = d3max(answered, (d) => d.responseValue);
-
 			const counts = rollup(
 				g,
 				(g) => g.length,
-				(d) => d.responseValue
+				(d) => d.normalizedResponseValue
 			);
 
 			const floored = interval.floor(g[0].dateTime);
 			const start = max(floored, startDate);
 			const end = min(interval.offset(floored, 1), endDate);
 
-			return { median: medianValue, min: minValue, max: maxValue, counts, start, end };
+			return { counts, start, end };
 		},
 		(d) => interval.count(startDate, d.dateTime)
 	)

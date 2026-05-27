@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type { MergedProItem } from '../../../shared/api';
-	import PROLegend from './PROLegend.svelte';
+	import ProLegend from './ProLegend.svelte';
 
 	let { item }: { item: MergedProItem } = $props();
 </script>
 
 <div>
-	<PROLegend {item} />
+	<ProLegend {item} />
 </div>

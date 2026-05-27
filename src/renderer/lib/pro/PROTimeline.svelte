@@ -2,7 +2,7 @@
 	import type { ProResponse, MergedProItem } from '../../../shared/api';
 	import { scaleTime, scaleLinear } from 'd3-scale';
 	import type { ScaleTime, ScaleLinear } from 'd3-scale';
-	import { getPROColor, scaleCanvas } from '$lib/vis-utils';
+	import { getProColor, scaleCanvas } from '$lib/vis-utils';
 	import { axis } from '$lib/components/vis/axis/axis';
 	import { timeDay } from 'd3-time';
 
@@ -47,7 +47,7 @@
 
 	const y = $derived(
 		scaleLinear()
-			.domain([0, item.responseItemValues.length - 2])
+			.domain([0, 1])
 			.range([height - marginBottom, marginTop])
 	);
 
@@ -89,16 +89,16 @@
 
 		for (const response of responses) {
 			const barX = x(response.dateTime) - barWidth / 2;
-			ctx.fillStyle = getPROColor(response.normalizedResponseValue);
+			ctx.fillStyle = getProColor(response.normalizedResponseValue);
 
-			if (response.normalizedResponseValue === -1 || response.normalizedResponseValue === 0) {
+			if (response.normalizedResponseValue <= 0) {
 				ctx.fillRect(barX, y.range()[0], barWidth, baselineHeight);
 			} else {
 				ctx.fillRect(
 					barX,
-					y(response.responseValue),
+					y(response.normalizedResponseValue),
 					barWidth,
-					y.range()[0] - y(response.responseValue)
+					y.range()[0] - y(response.normalizedResponseValue)
 				);
 			}
 		}

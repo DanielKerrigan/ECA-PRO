@@ -1,7 +1,14 @@
 import * as d3 from 'd3';
 import { z } from 'zod';
 import { FileResults, SingleTreatmentEvent } from '../../shared/api.js';
-import { exampleDate, getFileData, zodDate, zodInteger, zodNonEmptyString } from '../utils.js';
+import {
+	exampleDate,
+	getFileData,
+	zodDate,
+	zodInteger,
+	zodNonEmptyString,
+	zodRequiredString
+} from '../utils.js';
 
 export function getSystemicTherapySchema(
 	parsers: ((dateString: string) => Date | null)[],
@@ -9,12 +16,12 @@ export function getSystemicTherapySchema(
 ): z.ZodType<SingleTreatmentEvent> {
 	const Schema = z
 		.object({
-			'ECA ID': zodInteger('ECA ID'),
-			'Event Name': z.string().trim(),
-			'Treatment site': zodNonEmptyString('Treatment site'),
-			'Name of [st_type]': zodNonEmptyString('Name of [st_type]'),
-			'Treatment date': zodDate('Treatment date', parsers, exampleDateStrings),
-			'The amount of [st_type] that the patient actually received': z.string().trim()
+			'ECA ID': zodInteger(),
+			'Event Name': zodRequiredString(),
+			'Treatment site': zodNonEmptyString(),
+			'Name of [st_type]': zodNonEmptyString(),
+			'Treatment date': zodDate(parsers, exampleDateStrings),
+			'The amount of [st_type] that the patient actually received': zodRequiredString()
 		})
 		.transform((d): SingleTreatmentEvent => {
 			const detail = `${d['Name of [st_type]']} - ${d['Treatment site']}`;

@@ -1,12 +1,13 @@
 import type {
 	Data,
-	PROUsersResponses,
-	PROUsersConstructOrders,
+	ProUsersResponses,
+	ProUsersConstructOrders,
 	Settings,
-	TreatmentEvent
+	TreatmentEvent,
+	FileResults
 } from '../shared/api.js';
 import { getProItems, mergeProItems, getProItemById } from './pro/proMeta.js';
-import { getProResponses, groupPROResponses } from './pro/proResponses.js';
+import { getProResponses, groupProResponses } from './pro/proResponses.js';
 import { getUsersConstructOrders } from './pro/proSymptomSorting.js';
 import { getRadiationTreatments } from './symptoms/radiation.js';
 import { getOralTreatments } from './symptoms/oral.js';
@@ -39,7 +40,20 @@ export function getData(settings: Settings): Promise<Data> {
 
 		// read PRO META data
 
-		const defaultFileResult = { rows: [], errors: ['Could not read file'] };
+		const defaultFileResult = {
+			rows: [],
+			errors: [
+				{
+					row: 0,
+					errors: [
+						{
+							formErrors: ['cannot read file'],
+							fieldErrors: {}
+						}
+					]
+				}
+			]
+		};
 
 		const proItems =
 			proMetaResult.status === 'fulfilled'
@@ -52,11 +66,11 @@ export function getData(settings: Settings): Promise<Data> {
 
 		const allProReponses =
 			proDataResult.status === 'fulfilled'
-				? getProResponses(stripBom(proDataResult.value), proMetaByKey, proItemIdToKey)
+				? getProResponses(stripBom(proDataResult.value), proMetaById)
 				: defaultFileResult;
-		const proUsersResponses: PROUsersResponses = groupPROResponses(allProReponses.rows);
+		const proUsersResponses: ProUsersResponses = groupProResponses(allProReponses.rows);
 
-		const proUsersConstructOrders: PROUsersConstructOrders = getUsersConstructOrders(
+		const proUsersConstructOrders: ProUsersConstructOrders = getUsersConstructOrders(
 			proMetaByKey,
 			allProReponses.rows
 		);

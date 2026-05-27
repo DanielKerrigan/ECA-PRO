@@ -22,14 +22,18 @@ export function getFileData<T>(contents: string, schema: z.ZodType<T>): FileResu
 	const rawRows = d3.csvParse(contents);
 
 	const rows: T[] = [];
-	const errors: string[] = [];
+	const errors: FileResults<T>['errors'] = [];
 
 	rawRows.forEach((rawRow, i) => {
 		const result = schema.safeParse(rawRow);
 		if (result.success) {
 			rows.push(result.data);
 		} else {
-			errors.push(`Row ${i + 2}: ${result.error.message}`);
+			z.flattenError(result.error);
+			errors.push({
+				row: i + 2,
+				errors: z.flattenError(result.error)
+			});
 		}
 	});
 
@@ -39,18 +43,19 @@ export function getFileData<T>(contents: string, schema: z.ZodType<T>): FileResu
 	};
 }
 
-export function zodInteger(columnName: string) {
-	return z
-		.string()
-		.trim()
-		.min(1, `"${columnName}" cannot be empty`)
-		.refine((val) => !isNaN(Number(val)), `"${columnName}" must be a number`)
-		.transform(Number)
-		.pipe(z.int(`"${columnName}" must be a whole number`));
+export function zodRequiredString() {
+	return z.string('required').trim();
 }
 
-export function zodNonEmptyString(columnName: string) {
-	return z.string().trim().min(1, `"${columnName}" cannot be empty`);
+export function zodNonEmptyString() {
+	return zodRequiredString().min(1, 'cannot be empty');
+}
+
+export function zodInteger() {
+	return zodNonEmptyString()
+		.refine((val) => !isNaN(Number(val)), 'must be a number')
+		.transform(Number)
+		.pipe(z.int('must be a whole number'));
 }
 
 export const exampleDate = new Date();
@@ -73,34 +78,23 @@ export function parseDate(
 }
 
 export function zodDate(
-	columnName: string,
 	dateParsers: ((dateString: string) => Date | null)[],
 	exampleDateStrings: string[]
 ) {
-	return z
-		.string()
-		.trim()
-		.min(1, `"${columnName}" cannot be empty`)
+	return zodNonEmptyString()
 		.transform((d) => parseDate(d, dateParsers))
-		.pipe(
-			z.date(
-				`"${columnName}" is expected to be in one of these formats: ${exampleDateStrings.join(', ')}`
-			)
-		);
+		.pipe(z.date(`expected to be in one of these formats: ${exampleDateStrings.join(', ')}`));
 }
 
 export function zodOptionalDate(
-	columnName: string,
 	dateParsers: ((dateString: string) => Date | null)[],
 	exampleDateStrings: string[]
 ) {
-	return z
-		.string()
-		.trim()
+	return zodRequiredString()
 		.transform((d) => (d === '' ? undefined : parseDate(d, dateParsers)))
 		.refine(
 			(d) => d === undefined || d instanceof Date,
-			`"${columnName}" is expected to be in one of these formats: ${exampleDateStrings.join(', ')}`
+			`expected to be in one of these formats: ${exampleDateStrings.join(', ')}`
 		)
 		.transform((d) => d ?? null);
 }

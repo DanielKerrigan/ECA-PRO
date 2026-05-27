@@ -1,14 +1,14 @@
 <script lang="ts">
 	import type { ProResponse, MergedProItem } from '../../../shared/api';
-	import { max } from 'd3-array';
+	import { max, ascending } from 'd3-array';
 	import { scaleTime, scaleLinear } from 'd3-scale';
 	import type { ScaleTime, ScaleLinear } from 'd3-scale';
 	import { stack as d3stack, stackOffsetExpand, stackOffsetNone } from 'd3-shape';
 	import type { Series } from 'd3-shape';
-	import { getPROColor, scaleCanvas } from '$lib/vis-utils';
+	import { getProColor, scaleCanvas } from '$lib/vis-utils';
 	import { axis } from '$lib/components/vis/axis/axis';
-	import { getAggregatedPROResponses } from '../aggregation';
-	import type { AggregatedPROResponses, AggregationLevel } from '../aggregation';
+	import { getAggregatedProResponses } from '../aggregation';
+	import type { AggregatedProResponses, AggregationLevel } from '../aggregation';
 	import { format } from 'd3-format';
 
 	let {
@@ -48,17 +48,14 @@
 			: null
 	);
 
-	const aggregatedData: AggregatedPROResponses[] = $derived(
-		getAggregatedPROResponses(responses, aggregationLevel, startDate, endDate)
+	const aggregatedData: AggregatedProResponses[] = $derived(
+		getAggregatedProResponses(responses, aggregationLevel, startDate, endDate)
 	);
 
-	const keys = $derived([
-		item.responseItemValues[item.responseItemValues.length - 1],
-		...item.responseItemValues.slice(0, -1)
-	]);
+	const keys = $derived(Array.from(item.valueToNormalizedValue.values()).sort(ascending));
 
 	const stack = $derived(
-		d3stack<any, AggregatedPROResponses, number>()
+		d3stack<any, AggregatedProResponses, number>()
 			.keys(keys)
 			.value((d, key) => d.counts.get(key) ?? 0)
 			.offset(normalizeBars ? stackOffsetExpand : stackOffsetNone)
@@ -80,7 +77,7 @@
 
 	function draw(
 		ctx: CanvasRenderingContext2D,
-		series: Series<AggregatedPROResponses, number>[],
+		series: Series<AggregatedProResponses, number>[],
 		x: ScaleTime<number, number>,
 		y: ScaleLinear<number, number>,
 		normalizeBars: boolean,
@@ -93,7 +90,7 @@
 		ctx.fillRect(0, 0, width, height);
 
 		for (const layer of series) {
-			ctx.fillStyle = getPROColor(item.normalizedResponseItemValues[layer.key]);
+			ctx.fillStyle = getProColor(layer.key);
 			for (const point of layer) {
 				const left = x(point.data.start) + 1;
 				const right = x(point.data.end) - 1;

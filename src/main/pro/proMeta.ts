@@ -13,12 +13,11 @@ import { z } from 'zod';
 export function getProItemSchema(): z.ZodType<ProItem> {
 	const Schema = z
 		.object({
-			ItemID: zodInteger('ItemID'),
-			Item: zodNonEmptyString('Item'),
-			ConstructName: zodNonEmptyString('ConstructName'),
-			ResponseItemType: zodNonEmptyString('ResponseItemType'),
-			ResponseItemValues: z
-				.string()
+			ItemID: zodInteger(),
+			Item: zodNonEmptyString(),
+			ConstructName: zodNonEmptyString(),
+			ResponseItemType: zodNonEmptyString(),
+			ResponseItemValues: zodNonEmptyString()
 				.transform((d) => d.split('|').map((s) => s.trim()))
 				.pipe(
 					z
@@ -37,8 +36,8 @@ export function getProItemSchema(): z.ZodType<ProItem> {
 							return naIndex === -1 || naIndex === v.length - 2;
 						}, `Second to last value in "ReponseItemValues" is expected to be "${notSexuallyActive}"`)
 				),
-			BankName: zodNonEmptyString('BankName'),
-			CategoryName: zodNonEmptyString('CategoryName')
+			BankName: zodNonEmptyString(),
+			CategoryName: zodNonEmptyString()
 		})
 		.transform((d): ProItem => {
 			const I = d3.range(d.ResponseItemValues.length);
